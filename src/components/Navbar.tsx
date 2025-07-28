@@ -49,7 +49,7 @@ const Navbar = () => {
         {/* Desktop Navigation */}
         <nav className="hidden md:flex items-center gap-6">
           {navItems.map(item => (
-            isHomePage && !item.path.includes('/') ? (
+            isHomePage && item.path === '/' ? (
               <button 
                 key={item.id}
                 onClick={() => handleTabClick(item.id)}
@@ -90,7 +90,7 @@ const Navbar = () => {
             <SheetContent side="right">
               <nav className="flex flex-col gap-4 mt-8">
                 {navItems.map(item => (
-                  isHomePage && !item.path.includes('/') ? (
+                  isHomePage && item.path === '/' ? (
                     <button
                       key={item.id}
                       onClick={() => {
