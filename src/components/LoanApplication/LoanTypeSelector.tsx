@@ -21,27 +21,27 @@ const LoanTypeSelector = () => {
   };
   
   return (
-    <div className="container mx-auto px-4 py-10">
-      <div className="max-w-3xl mx-auto bg-white p-8 rounded-lg shadow-sm">
-        <h1 className="text-3xl font-bold mb-8">Type of Desired Loan</h1>
+    <div className="container mx-auto px-4 py-6 sm:py-10">
+      <div className="max-w-3xl mx-auto bg-card p-4 sm:p-6 md:p-8 rounded-lg shadow-sm">
+        <h1 className="text-2xl sm:text-3xl font-bold mb-6 sm:mb-8 text-center sm:text-left">Type of Desired Loan</h1>
         
-        <div className="space-y-4">
+        <div className="space-y-3 sm:space-y-4">
           {loanTypes.map((loanType) => (
             <Card 
               key={loanType.id}
-              className="p-4 cursor-pointer hover:bg-gray-50 transition-colors border"
+              className="p-3 sm:p-4 cursor-pointer hover:bg-accent transition-colors border"
               onClick={() => handleLoanTypeSelect(loanType.id)}
             >
-              <div className="text-lg text-gray-800">{loanType.name}</div>
+              <div className="text-base sm:text-lg text-foreground">{loanType.name}</div>
             </Card>
           ))}
         </div>
         
-        <div className="flex justify-between mt-8">
+        <div className="flex flex-col sm:flex-row justify-between gap-3 sm:gap-0 mt-6 sm:mt-8">
           <Button 
             variant="outline" 
             onClick={() => navigate('/')}
-            className="flex items-center gap-2"
+            className="flex items-center justify-center gap-2 w-full sm:w-auto"
           >
             <ArrowLeft size={16} />
             Back
@@ -49,7 +49,7 @@ const LoanTypeSelector = () => {
           
           <Button 
             variant="default" 
-            className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700"
+            className="flex items-center justify-center gap-2 w-full sm:w-auto"
             disabled={true}
           >
             Next

@@ -105,4 +105,29 @@
   .text-balance {
     text-wrap: balance;
   }
+  
+  /* Mobile-first responsive utilities */
+  .responsive-padding {
+    @apply px-4 sm:px-6 lg:px-8;
+  }
+  
+  .responsive-margin {
+    @apply my-6 sm:my-8 lg:my-12;
+  }
+  
+  .responsive-text-lg {
+    @apply text-base sm:text-lg;
+  }
+  
+  .responsive-text-xl {
+    @apply text-lg sm:text-xl;
+  }
+  
+  .responsive-text-2xl {
+    @apply text-xl sm:text-2xl;
+  }
+  
+  .responsive-text-3xl {
+    @apply text-2xl sm:text-3xl;
+  }
 }

@@ -151,8 +151,8 @@ const BankRecommendation = () => {
           </p>
         </div>
         
-        <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
-          <Card className="md:col-span-1 border shadow-sm">
+        <div className="grid lg:grid-cols-3 gap-6 lg:gap-8 max-w-6xl mx-auto">
+          <Card className="lg:col-span-1 border shadow-sm">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Search className="h-5 w-5 text-primary" />
@@ -202,7 +202,7 @@ const BankRecommendation = () => {
                             Select the features that matter most to you
                           </FormDescription>
                         </div>
-                        <div className="grid grid-cols-2 gap-2">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                           {featureOptions.map((option) => (
                             <FormField
                               key={option.id}
@@ -334,7 +334,7 @@ const BankRecommendation = () => {
             </CardContent>
           </Card>
           
-          <Card className="md:col-span-2 border shadow-sm">
+          <Card className="lg:col-span-2 border shadow-sm">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <CreditCard className="h-5 w-5 text-primary" />
@@ -353,23 +353,23 @@ const BankRecommendation = () => {
               ) : allBanks.length > 0 ? (
                 <div className="space-y-6">
                   <Tabs defaultValue="all" className="w-full">
-                    <TabsList className="w-full grid grid-cols-3">
-                      <TabsTrigger value="all">All Banks</TabsTrigger>
-                      <TabsTrigger value="online">Online Banks</TabsTrigger>
-                      <TabsTrigger value="traditional">Traditional Banks</TabsTrigger>
+                    <TabsList className="w-full grid grid-cols-1 sm:grid-cols-3 h-auto sm:h-10">
+                      <TabsTrigger value="all" className="text-sm">All Banks</TabsTrigger>
+                      <TabsTrigger value="online" className="text-sm">Online Banks</TabsTrigger>
+                      <TabsTrigger value="traditional" className="text-sm">Traditional Banks</TabsTrigger>
                     </TabsList>
                     <TabsContent value="all" className="mt-4">
-                      <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                         {bankOptions.map((bank) => (
                           <div 
                             key={bank.id} 
                             className="flex flex-col items-center p-4 border rounded-lg bg-card hover:shadow-md transition-shadow cursor-pointer"
                             onClick={() => handleBankClick(bank)}
                           >
-                            <div className="w-20 h-20 rounded-full bg-primary/10 flex items-center justify-center mb-3">
-                              <span className="text-lg font-bold text-primary">{bank.logoText}</span>
+                            <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-primary/10 flex items-center justify-center mb-3">
+                              <span className="text-base sm:text-lg font-bold text-primary">{bank.logoText}</span>
                             </div>
-                            <h3 className="text-base font-medium text-center">{bank.name}</h3>
+                            <h3 className="text-sm sm:text-base font-medium text-center">{bank.name}</h3>
                             <div className="flex mt-2">
                               {Array(5).fill(0).map((_, i) => (
                                 <span key={i} className={`text-xs ${i < Math.floor(bank.rating) ? "text-amber-500" : "text-gray-300"}`}>★</span>

@@ -131,7 +131,7 @@ const LoanPrediction = () => {
           </p>
         </div>
         
-        <div className="grid md:grid-cols-2 gap-8 max-w-5xl mx-auto">
+        <div className="grid lg:grid-cols-2 gap-6 lg:gap-8 max-w-5xl mx-auto">
           <Card className="border shadow-sm">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
@@ -145,7 +145,7 @@ const LoanPrediction = () => {
             <CardContent>
               <Form {...form}>
                 <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <FormField
                       control={form.control}
                       name="income"
@@ -175,7 +175,7 @@ const LoanPrediction = () => {
                     />
                   </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <FormField
                       control={form.control}
                       name="loanAmount"
@@ -205,7 +205,7 @@ const LoanPrediction = () => {
                     />
                   </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <FormField
                       control={form.control}
                       name="employment"
@@ -336,7 +336,7 @@ const LoanPrediction = () => {
                     </div>
 
                     {result.approved && (
-                      <div className="grid grid-cols-2 gap-4 mt-4">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
                         <div className="p-3 border rounded-md bg-card">
                           <p className="text-sm text-muted-foreground">Est. Interest Rate</p>
                           <p className="text-lg font-semibold">{result.interestRate}%</p>

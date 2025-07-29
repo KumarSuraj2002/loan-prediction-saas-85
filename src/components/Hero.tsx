@@ -11,18 +11,18 @@ const Hero = () => {
   };
   
   return (
-    <section className="relative overflow-hidden bg-background py-20 md:py-32">
-      <div className="container px-4 md:px-6">
-        <div className="grid gap-12 md:grid-cols-2 md:gap-16 items-center">
-          <div className="flex flex-col gap-5">
-            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-balance tracking-tight">
+    <section className="relative overflow-hidden bg-background py-12 sm:py-20 lg:py-32">
+      <div className="container responsive-padding">
+        <div className="grid gap-8 lg:grid-cols-2 lg:gap-16 items-center">
+          <div className="flex flex-col gap-4 sm:gap-5 text-center lg:text-left">
+            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-balance tracking-tight">
               <span className="inline-block text-primary">Smart</span> Financial Decisions with AI
             </h1>
-            <p className="text-xl text-muted-foreground max-w-[600px]">
+            <p className="responsive-text-xl text-muted-foreground max-w-[600px] mx-auto lg:mx-0">
               Predict loan approvals and find the perfect bank for your needs with our AI-powered financial assistant.
             </p>
-            <div className="flex flex-col sm:flex-row gap-3 mt-4">
-              <Button onClick={handleGetStarted} size="lg" className="group">
+            <div className="flex flex-col sm:flex-row gap-3 mt-2 sm:mt-4 justify-center lg:justify-start">
+              <Button onClick={handleGetStarted} size="lg" className="group w-full sm:w-auto">
                 Try Loan Prediction
                 <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
               </Button>
@@ -30,19 +30,20 @@ const Hero = () => {
                 variant="outline" 
                 size="lg"
                 onClick={() => navigate('/loan-application')}
+                className="w-full sm:w-auto"
               >
                 Get Started
               </Button>
             </div>
-            <div className="mt-6 flex items-center gap-2 text-sm text-muted-foreground">
+            <div className="mt-4 sm:mt-6 flex flex-col sm:flex-row items-center gap-2 sm:gap-3 text-sm text-muted-foreground justify-center lg:justify-start">
               <div className="flex -space-x-2">
                 {[1, 2, 3, 4].map(i => (
-                  <div key={i} className="h-7 w-7 rounded-full bg-muted flex items-center justify-center border-2 border-background">
+                  <div key={i} className="h-6 w-6 sm:h-7 sm:w-7 rounded-full bg-muted flex items-center justify-center border-2 border-background">
                     <span className="text-xs font-medium">U{i}</span>
                   </div>
                 ))}
               </div>
-              <div>Join 10,000+ users making smarter financial decisions</div>
+              <div className="text-center sm:text-left">Join 10,000+ users making smarter financial decisions</div>
             </div>
           </div>
           <div className="relative">

@@ -5,17 +5,17 @@ import { Link } from "react-router-dom";
 const Footer = () => {
   return (
     <footer className="border-t">
-      <div className="container px-4 md:px-6 py-12">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-          <div className="md:col-span-1">
-            <div className="flex items-center gap-2 font-bold text-2xl text-primary mb-3">
-              <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-white">FB</div>
+      <div className="container px-4 md:px-6 py-8 sm:py-12">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-8">
+          <div className="sm:col-span-2 lg:col-span-1">
+            <div className="flex items-center gap-2 font-bold text-xl sm:text-2xl text-primary mb-3">
+              <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-primary flex items-center justify-center text-white text-sm sm:text-base">FB</div>
               <span>FinanceBuddy</span>
             </div>
-            <p className="text-sm text-muted-foreground">
+            <p className="text-sm text-muted-foreground mb-4">
               Simplified financial decisions powered by AI.
             </p>
-            <div className="flex space-x-4 mt-4">
+            <div className="flex space-x-3 sm:space-x-4">
               <Button size="icon" variant="ghost">
                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide">
                   <path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"></path>
@@ -38,7 +38,7 @@ const Footer = () => {
               </Button>
             </div>
           </div>
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-8 md:col-span-3">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 lg:gap-8 sm:col-span-2 lg:col-span-3">
             <div className="space-y-3">
               <h4 className="font-medium text-sm">Products</h4>
               <ul className="space-y-2 text-sm">
@@ -68,11 +68,11 @@ const Footer = () => {
             </div>
           </div>
         </div>
-        <div className="flex flex-col md:flex-row justify-between items-center mt-12 pt-8 border-t text-sm text-muted-foreground">
-          <div className="mb-4 md:mb-0">
+        <div className="flex flex-col sm:flex-row justify-between items-center mt-8 sm:mt-12 pt-6 sm:pt-8 border-t text-sm text-muted-foreground">
+          <div className="mb-4 sm:mb-0 text-center sm:text-left">
             &copy; 2024 FinanceBuddy. All rights reserved.
           </div>
-          <div className="flex gap-4">
+          <div className="flex gap-4 text-center">
             <Link to="/about" className="hover:text-foreground">Terms</Link>
             <Link to="/about" className="hover:text-foreground">Privacy</Link>
             <Link to="/about" className="hover:text-foreground">Cookies</Link>

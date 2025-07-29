@@ -37,25 +37,25 @@ const Features = () => {
   ];
 
   return (
-    <section id="features" className="bg-accent py-20">
-      <div className="container px-4 md:px-6">
-        <div className="flex flex-col items-center justify-center text-center mb-12">
-          <h2 className="text-3xl font-bold tracking-tight">Powerful Financial Tools</h2>
-          <p className="mt-4 text-xl text-muted-foreground max-w-[800px]">
+    <section id="features" className="bg-accent py-12 sm:py-16 lg:py-20">
+      <div className="container responsive-padding">
+        <div className="flex flex-col items-center justify-center text-center mb-8 sm:mb-12">
+          <h2 className="responsive-text-3xl font-bold tracking-tight">Powerful Financial Tools</h2>
+          <p className="mt-3 sm:mt-4 responsive-text-xl text-muted-foreground max-w-[800px]">
             Our platform combines advanced AI with financial expertise to help you make better decisions.
           </p>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
           {features.map((feature, i) => (
             <Card key={i} className="border bg-card shadow-sm hover:shadow-md transition-shadow">
-              <CardHeader className="pb-2">
-                <div className="mb-3 inline-flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10">
+              <CardHeader className="pb-2 p-4 sm:p-6">
+                <div className="mb-3 inline-flex h-9 w-9 sm:h-10 sm:w-10 items-center justify-center rounded-lg bg-primary/10">
                   {feature.icon}
                 </div>
-                <CardTitle className="text-xl">{feature.title}</CardTitle>
+                <CardTitle className="text-lg sm:text-xl">{feature.title}</CardTitle>
               </CardHeader>
-              <CardContent>
-                <CardDescription className="text-base">{feature.description}</CardDescription>
+              <CardContent className="p-4 sm:p-6 pt-0">
+                <CardDescription className="text-sm sm:text-base">{feature.description}</CardDescription>
               </CardContent>
             </Card>
           ))}
