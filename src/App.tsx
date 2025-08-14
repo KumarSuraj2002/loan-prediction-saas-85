@@ -20,6 +20,8 @@ import APIDocumentation from "./pages/APIDocumentation";
 import BankDetailsPage from "./pages/BankDetailsPage";
 import LoanDetailsPage from "./pages/LoanDetailsPage";
 import LoanApplication from "./pages/LoanApplication";
+import AdminLogin from "./pages/AdminLogin";
+import AdminDashboard from "./pages/AdminDashboard";
 
 const queryClient = new QueryClient();
 
@@ -46,6 +48,8 @@ const App = () => (
           <Route path="/bank/:bankId/loan/:loanType" element={<LoanDetailsPage />} />
           <Route path="/loan-application" element={<LoanApplication />} />
           <Route path="/loan-application/:loanType" element={<LoanApplication />} />
+          <Route path="/admin" element={<AdminLogin />} />
+          <Route path="/admin/dashboard" element={<AdminDashboard />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
