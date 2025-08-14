@@ -22,7 +22,9 @@ import LoanDetailsPage from "./pages/LoanDetailsPage";
 import LoanApplication from "./pages/LoanApplication";
 import AdminLogin from "./pages/AdminLogin";
 import AdminDashboard from "./pages/AdminDashboard";
+import AdminSettings from "./pages/AdminSettings";
 import AdminLayout from "./components/AdminLayout";
+import MaintenanceWrapper from "./components/MaintenanceWrapper";
 
 const queryClient = new QueryClient();
 
@@ -33,28 +35,37 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <Routes>
-          <Route path="/" element={<Index />} />
-          <Route path="/about" element={<About />} />
-          <Route path="/careers" element={<Careers />} />
-          <Route path="/press" element={<Press />} />
-          <Route path="/press/:releaseId" element={<PressReleaseDetail />} />
-          <Route path="/contact" element={<Contact />} />
-          <Route path="/blog" element={<Blog />} />
-          <Route path="/blog/:postId" element={<BlogPost />} />
-          <Route path="/guides" element={<FinancialGuides />} />
-          <Route path="/guides/:guideId" element={<GuidePost />} />
-          <Route path="/calculator" element={<EMICalculator />} />
-          <Route path="/api-docs" element={<APIDocumentation />} />
-          <Route path="/bank/:bankId" element={<BankDetailsPage />} />
-          <Route path="/bank/:bankId/loan/:loanType" element={<LoanDetailsPage />} />
-          <Route path="/loan-application" element={<LoanApplication />} />
-          <Route path="/loan-application/:loanType" element={<LoanApplication />} />
+          {/* Admin routes - not affected by maintenance mode */}
           <Route path="/admin" element={<AdminLogin />} />
           <Route path="/admin/*" element={<AdminLayout />}>
             <Route path="dashboard" element={<AdminDashboard />} />
+            <Route path="settings" element={<AdminSettings />} />
           </Route>
-          {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-          <Route path="*" element={<NotFound />} />
+          
+          {/* Public routes - wrapped with maintenance mode */}
+          <Route path="/*" element={
+            <MaintenanceWrapper>
+              <Routes>
+                <Route path="/" element={<Index />} />
+                <Route path="/about" element={<About />} />
+                <Route path="/careers" element={<Careers />} />
+                <Route path="/press" element={<Press />} />
+                <Route path="/press/:releaseId" element={<PressReleaseDetail />} />
+                <Route path="/contact" element={<Contact />} />
+                <Route path="/blog" element={<Blog />} />
+                <Route path="/blog/:postId" element={<BlogPost />} />
+                <Route path="/guides" element={<FinancialGuides />} />
+                <Route path="/guides/:guideId" element={<GuidePost />} />
+                <Route path="/calculator" element={<EMICalculator />} />
+                <Route path="/api-docs" element={<APIDocumentation />} />
+                <Route path="/bank/:bankId" element={<BankDetailsPage />} />
+                <Route path="/bank/:bankId/loan/:loanType" element={<LoanDetailsPage />} />
+                <Route path="/loan-application" element={<LoanApplication />} />
+                <Route path="/loan-application/:loanType" element={<LoanApplication />} />
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+            </MaintenanceWrapper>
+          } />
         </Routes>
       </BrowserRouter>
     </TooltipProvider>
