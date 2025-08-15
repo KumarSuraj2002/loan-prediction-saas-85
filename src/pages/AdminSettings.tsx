@@ -99,12 +99,14 @@ const AdminSettings = () => {
 
   const updateSetting = async (key: string, value: any) => {
     try {
+      console.log('Updating setting:', key, value);
       const { error } = await supabase
         .from('site_settings')
         .update({ setting_value: value })
         .eq('setting_key', key);
 
       if (error) throw error;
+      console.log('Setting updated successfully');
 
       toast({
         title: "Success",

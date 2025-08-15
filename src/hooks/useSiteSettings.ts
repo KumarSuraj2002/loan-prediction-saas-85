@@ -57,15 +57,18 @@ export const useSiteSettings = () => {
 
   const fetchSettings = async () => {
     try {
+      console.log('Fetching settings...');
       const { data, error } = await supabase
         .from('site_settings')
         .select('*');
 
       if (error) throw error;
+      console.log('Settings data from DB:', data);
 
       if (data) {
         const newSettings = { ...settings };
         data.forEach(setting => {
+          console.log('Processing setting:', setting.setting_key, setting.setting_value);
           switch (setting.setting_key) {
             case 'general':
               newSettings.general = setting.setting_value as unknown as GeneralSettings;
@@ -78,6 +81,7 @@ export const useSiteSettings = () => {
               break;
           }
         });
+        console.log('New settings state:', newSettings);
         setSettings(newSettings);
       }
     } catch (error) {
@@ -91,6 +95,7 @@ export const useSiteSettings = () => {
     fetchSettings();
 
     // Set up real-time subscription for settings changes
+    console.log('Setting up real-time subscription...');
     const channel = supabase
       .channel('site_settings_changes')
       .on(
@@ -100,14 +105,18 @@ export const useSiteSettings = () => {
           schema: 'public',
           table: 'site_settings'
         },
-        () => {
+        (payload) => {
+          console.log('Real-time change detected:', payload);
           // Refetch settings when any change occurs
           fetchSettings();
         }
       )
-      .subscribe();
+      .subscribe((status) => {
+        console.log('Real-time subscription status:', status);
+      });
 
     return () => {
+      console.log('Cleaning up real-time subscription');
       supabase.removeChannel(channel);
     };
   }, []);
