@@ -66,7 +66,29 @@ export const useSiteSettings = () => {
       console.log('Settings data from DB:', data);
 
       if (data) {
-        const newSettings = { ...settings };
+        const newSettings: SiteSettings = {
+          general: {
+            site_title: 'Finance Buddy',
+            about_us: 'Finance Buddy is your trusted partner for loan applications and financial guidance.'
+          },
+          contacts: {
+            address: '',
+            phone_numbers: [],
+            email: '',
+            google_map: '',
+            social_links: {
+              facebook: '',
+              twitter: '',
+              instagram: '',
+              linkedin: ''
+            }
+          },
+          maintenance: {
+            is_maintenance: false,
+            maintenance_message: ''
+          }
+        };
+
         data.forEach(setting => {
           console.log('Processing setting:', setting.setting_key, setting.setting_value);
           switch (setting.setting_key) {
@@ -92,32 +114,43 @@ export const useSiteSettings = () => {
   };
 
   useEffect(() => {
-    fetchSettings();
+    const fetchAndSubscribe = async () => {
+      await fetchSettings();
 
-    // Set up real-time subscription for settings changes
-    console.log('Setting up real-time subscription...');
-    const channel = supabase
-      .channel('site_settings_changes')
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'site_settings'
-        },
-        (payload) => {
-          console.log('Real-time change detected:', payload);
-          // Refetch settings when any change occurs
-          fetchSettings();
-        }
-      )
-      .subscribe((status) => {
-        console.log('Real-time subscription status:', status);
-      });
+      // Set up real-time subscription for settings changes
+      console.log('Setting up real-time subscription...');
+      const channel = supabase
+        .channel('site_settings_changes')
+        .on(
+          'postgres_changes',
+          {
+            event: '*',
+            schema: 'public',
+            table: 'site_settings'
+          },
+          (payload) => {
+            console.log('Real-time change detected:', payload);
+            // Refetch settings when any change occurs
+            fetchSettings();
+          }
+        )
+        .subscribe((status) => {
+          console.log('Real-time subscription status:', status);
+        });
+
+      return () => {
+        console.log('Cleaning up real-time subscription');
+        supabase.removeChannel(channel);
+      };
+    };
+
+    let cleanup: (() => void) | undefined;
+    fetchAndSubscribe().then((cleanupFn) => {
+      cleanup = cleanupFn;
+    });
 
     return () => {
-      console.log('Cleaning up real-time subscription');
-      supabase.removeChannel(channel);
+      if (cleanup) cleanup();
     };
   }, []);
 
