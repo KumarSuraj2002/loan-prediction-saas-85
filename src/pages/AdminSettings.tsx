@@ -155,12 +155,14 @@ const AdminSettings = () => {
 
   const fetchTeamMembers = async () => {
     try {
+      console.log('Fetching team members...');
       const { data, error } = await supabase
         .from('team_members')
         .select('*')
         .order('display_order');
 
       if (error) throw error;
+      console.log('Team members fetched:', data);
       setTeamMembers(data || []);
     } catch (error) {
       console.error('Error fetching team members:', error);
@@ -247,8 +249,11 @@ const AdminSettings = () => {
   };
 
   if (loading) {
+    console.log('AdminSettings still loading...');
     return <div className="flex items-center justify-center h-64">Loading...</div>;
   }
+
+  console.log('AdminSettings rendered, teamMembers count:', teamMembers.length);
 
   return (
     <div className="space-y-6">
@@ -491,6 +496,7 @@ const AdminSettings = () => {
           <CardTitle className="text-xl">Team Management</CardTitle>
           <Button
             onClick={() => {
+              console.log('Add Member button clicked');
               setEditingTeamMember(null);
               setShowTeamDialog(true);
             }}
