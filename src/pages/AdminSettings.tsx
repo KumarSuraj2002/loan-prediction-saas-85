@@ -6,7 +6,9 @@ import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
-import { Edit, Save, X } from 'lucide-react';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Edit, Save, X, Plus, Trash2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 
@@ -33,6 +35,15 @@ interface MaintenanceSettings {
   maintenance_message: string;
 }
 
+interface TeamMember {
+  id: string;
+  name: string;
+  position: string;
+  bio: string;
+  avatar: string;
+  display_order: number;
+}
+
 const AdminSettings = () => {
   const { toast } = useToast();
   const [generalSettings, setGeneralSettings] = useState<GeneralSettings>({
@@ -56,12 +67,16 @@ const AdminSettings = () => {
     maintenance_message: ''
   });
 
+  const [teamMembers, setTeamMembers] = useState<TeamMember[]>([]);
   const [editingGeneral, setEditingGeneral] = useState(false);
   const [editingContacts, setEditingContacts] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [showTeamDialog, setShowTeamDialog] = useState(false);
+  const [editingTeamMember, setEditingTeamMember] = useState<TeamMember | null>(null);
 
   useEffect(() => {
     fetchSettings();
+    fetchTeamMembers();
   }, []);
 
   const fetchSettings = async () => {
@@ -136,6 +151,99 @@ const AdminSettings = () => {
     const newSettings = { ...maintenanceSettings, is_maintenance: checked };
     setMaintenanceSettings(newSettings);
     updateSetting('maintenance', newSettings);
+  };
+
+  const fetchTeamMembers = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('team_members')
+        .select('*')
+        .order('display_order');
+
+      if (error) throw error;
+      setTeamMembers(data || []);
+    } catch (error) {
+      console.error('Error fetching team members:', error);
+      toast({
+        title: "Error",
+        description: "Failed to load team members",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const saveTeamMember = async (member: Omit<TeamMember, 'id'> & { id?: string }) => {
+    try {
+      if (member.id) {
+        // Update existing member
+        const { error } = await supabase
+          .from('team_members')
+          .update({
+            name: member.name,
+            position: member.position,
+            bio: member.bio,
+            avatar: member.avatar,
+            display_order: member.display_order
+          })
+          .eq('id', member.id);
+
+        if (error) throw error;
+      } else {
+        // Create new member
+        const { error } = await supabase
+          .from('team_members')
+          .insert({
+            name: member.name,
+            position: member.position,
+            bio: member.bio,
+            avatar: member.avatar,
+            display_order: member.display_order
+          });
+
+        if (error) throw error;
+      }
+
+      toast({
+        title: "Success",
+        description: `Team member ${member.id ? 'updated' : 'added'} successfully`
+      });
+
+      fetchTeamMembers();
+      setShowTeamDialog(false);
+      setEditingTeamMember(null);
+    } catch (error) {
+      console.error('Error saving team member:', error);
+      toast({
+        title: "Error",
+        description: "Failed to save team member",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const deleteTeamMember = async (id: string) => {
+    try {
+      const { error } = await supabase
+        .from('team_members')
+        .delete()
+        .eq('id', id);
+
+      if (error) throw error;
+
+      toast({
+        title: "Success",
+        description: "Team member deleted successfully"
+      });
+
+      fetchTeamMembers();
+    } catch (error) {
+      console.error('Error deleting team member:', error);
+      toast({
+        title: "Error",
+        description: "Failed to delete team member",
+        variant: "destructive"
+      });
+    }
   };
 
   if (loading) {
@@ -374,7 +482,199 @@ const AdminSettings = () => {
           </div>
         </CardContent>
       </Card>
+
+      <Separator />
+
+      {/* Team Management */}
+      <Card>
+        <CardHeader className="flex flex-row items-center justify-between">
+          <CardTitle className="text-xl">Team Management</CardTitle>
+          <Button
+            onClick={() => {
+              setEditingTeamMember(null);
+              setShowTeamDialog(true);
+            }}
+          >
+            <Plus className="h-4 w-4 mr-2" />
+            Add Member
+          </Button>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {teamMembers.map((member) => (
+              <Card key={member.id} className="overflow-hidden">
+                <CardContent className="p-4">
+                  <div className="flex items-center space-x-3 mb-3">
+                    <Avatar className="h-12 w-12">
+                      <AvatarImage src={member.avatar} alt={member.name} />
+                      <AvatarFallback>{member.name.slice(0, 2)}</AvatarFallback>
+                    </Avatar>
+                    <div className="flex-1 min-w-0">
+                      <h4 className="font-medium truncate">{member.name}</h4>
+                      <p className="text-sm text-muted-foreground truncate">{member.position}</p>
+                    </div>
+                  </div>
+                  <p className="text-sm text-muted-foreground mb-3 line-clamp-2">{member.bio}</p>
+                  <div className="flex justify-between">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        setEditingTeamMember(member);
+                        setShowTeamDialog(true);
+                      }}
+                    >
+                      <Edit className="h-3 w-3 mr-1" />
+                      Edit
+                    </Button>
+                    <Button
+                      variant="destructive"
+                      size="sm"
+                      onClick={() => deleteTeamMember(member.id)}
+                    >
+                      <Trash2 className="h-3 w-3 mr-1" />
+                      Delete
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Team Member Dialog */}
+      <TeamMemberDialog
+        open={showTeamDialog}
+        onOpenChange={setShowTeamDialog}
+        member={editingTeamMember}
+        onSave={saveTeamMember}
+        nextDisplayOrder={teamMembers.length + 1}
+      />
     </div>
+  );
+};
+
+// Team Member Dialog Component
+interface TeamMemberDialogProps {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  member: TeamMember | null;
+  onSave: (member: Omit<TeamMember, 'id'> & { id?: string }) => void;
+  nextDisplayOrder: number;
+}
+
+const TeamMemberDialog = ({ open, onOpenChange, member, onSave, nextDisplayOrder }: TeamMemberDialogProps) => {
+  const [formData, setFormData] = useState({
+    name: '',
+    position: '',
+    bio: '',
+    avatar: '',
+    display_order: nextDisplayOrder
+  });
+
+  useEffect(() => {
+    if (member) {
+      setFormData({
+        name: member.name,
+        position: member.position,
+        bio: member.bio,
+        avatar: member.avatar,
+        display_order: member.display_order
+      });
+    } else {
+      setFormData({
+        name: '',
+        position: '',
+        bio: '',
+        avatar: '',
+        display_order: nextDisplayOrder
+      });
+    }
+  }, [member, nextDisplayOrder]);
+
+  const handleSave = () => {
+    if (!formData.name || !formData.position || !formData.bio || !formData.avatar) {
+      return;
+    }
+
+    onSave({
+      ...(member && { id: member.id }),
+      name: formData.name,
+      position: formData.position,
+      bio: formData.bio,
+      avatar: formData.avatar,
+      display_order: formData.display_order
+    });
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="max-w-md">
+        <DialogHeader>
+          <DialogTitle>
+            {member ? 'Edit Team Member' : 'Add Team Member'}
+          </DialogTitle>
+        </DialogHeader>
+        <div className="space-y-4">
+          <div>
+            <Label htmlFor="member-name">Name</Label>
+            <Input
+              id="member-name"
+              value={formData.name}
+              onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
+              placeholder="Enter name"
+            />
+          </div>
+          <div>
+            <Label htmlFor="member-position">Position</Label>
+            <Input
+              id="member-position"
+              value={formData.position}
+              onChange={(e) => setFormData(prev => ({ ...prev, position: e.target.value }))}
+              placeholder="Enter position"
+            />
+          </div>
+          <div>
+            <Label htmlFor="member-bio">Bio</Label>
+            <Textarea
+              id="member-bio"
+              value={formData.bio}
+              onChange={(e) => setFormData(prev => ({ ...prev, bio: e.target.value }))}
+              placeholder="Enter bio"
+              className="min-h-20"
+            />
+          </div>
+          <div>
+            <Label htmlFor="member-avatar">Avatar URL</Label>
+            <Input
+              id="member-avatar"
+              value={formData.avatar}
+              onChange={(e) => setFormData(prev => ({ ...prev, avatar: e.target.value }))}
+              placeholder="Enter avatar URL"
+            />
+          </div>
+          <div>
+            <Label htmlFor="member-order">Display Order</Label>
+            <Input
+              id="member-order"
+              type="number"
+              value={formData.display_order}
+              onChange={(e) => setFormData(prev => ({ ...prev, display_order: parseInt(e.target.value) || 1 }))}
+              min="1"
+            />
+          </div>
+          <div className="flex justify-end space-x-2">
+            <Button variant="outline" onClick={() => onOpenChange(false)}>
+              Cancel
+            </Button>
+            <Button onClick={handleSave}>
+              {member ? 'Update' : 'Add'} Member
+            </Button>
+          </div>
+        </div>
+      </DialogContent>
+    </Dialog>
   );
 };
 

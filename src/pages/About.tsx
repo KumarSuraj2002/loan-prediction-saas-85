@@ -1,65 +1,44 @@
 
+import { useEffect, useState } from 'react';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Button } from "@/components/ui/button";
 import { Users } from "lucide-react";
+import { supabase } from '@/integrations/supabase/client';
 
 interface TeamMember {
-  id: number;
+  id: string;
   name: string;
   position: string;
   bio: string;
   avatar: string;
+  display_order: number;
 }
 
-const teamMembers: TeamMember[] = [
-  {
-    id: 1,
-    name: "Sarah Johnson",
-    position: "CEO & Founder",
-    bio: "With over 15 years in fintech, Sarah founded FinanceBuddy with a vision to make financial services accessible to everyone.",
-    avatar: "https://images.unsplash.com/photo-1649972904349-6e44c42644a7?w=150&h=150&fit=crop&crop=faces",
-  },
-  {
-    id: 2,
-    name: "Michael Chen",
-    position: "CTO",
-    bio: "Michael leads our technology team, bringing expertise in AI and machine learning from his previous roles at major tech companies.",
-    avatar: "https://images.unsplash.com/photo-1581092795360-fd1ca04f0952?w=150&h=150&fit=crop&crop=faces",
-  },
-  {
-    id: 3,
-    name: "Priya Patel",
-    position: "Head of Data Science",
-    bio: "Priya oversees our prediction algorithms and ensures our recommendations are accurate and personalized for each user.",
-    avatar: "https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?w=150&h=150&fit=crop&crop=faces",
-  },
-  {
-    id: 4,
-    name: "David Rodriguez",
-    position: "Finance Director",
-    bio: "David brings his banking industry experience to ensure our financial advice is sound and complies with regulations.",
-    avatar: "https://images.unsplash.com/photo-1492321936769-b49830bc1d1e?w=150&h=150&fit=crop&crop=faces",
-  },
-  {
-    id: 5,
-    name: "Amara Wilson",
-    position: "Customer Success Lead",
-    bio: "Amara ensures our customers have the best experience and get the most value from our platform.",
-    avatar: "https://images.unsplash.com/photo-1649972904349-6e44c42644a7?w=150&h=150&fit=crop&crop=faces",
-  },
-  {
-    id: 6,
-    name: "James Lee",
-    position: "Marketing Director",
-    bio: "James crafts our brand message and leads initiatives to help more people discover our financial tools.",
-    avatar: "https://images.unsplash.com/photo-1581092795360-fd1ca04f0952?w=150&h=150&fit=crop&crop=faces",
-  }
-];
-
 const About = () => {
+  const [teamMembers, setTeamMembers] = useState<TeamMember[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchTeamMembers();
+  }, []);
+
+  const fetchTeamMembers = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('team_members')
+        .select('*')
+        .order('display_order');
+
+      if (error) throw error;
+      setTeamMembers(data || []);
+    } catch (error) {
+      console.error('Error fetching team members:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
   return (
     <div className="min-h-screen flex flex-col">
       <Navbar />
@@ -114,19 +93,29 @@ const About = () => {
               </p>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {teamMembers.map((member) => (
-                <Card key={member.id} className="overflow-hidden hover:shadow-lg transition-shadow">
-                  <CardContent className="p-6 flex flex-col items-center text-center">
-                    <Avatar className="h-24 w-24 mb-4">
-                      <AvatarImage src={member.avatar} alt={member.name} />
-                      <AvatarFallback>{member.name.slice(0, 2)}</AvatarFallback>
-                    </Avatar>
-                    <h3 className="text-xl font-bold mb-1">{member.name}</h3>
-                    <p className="text-primary font-medium mb-3">{member.position}</p>
-                    <p className="text-muted-foreground">{member.bio}</p>
-                  </CardContent>
-                </Card>
-              ))}
+              {loading ? (
+                <div className="col-span-full text-center py-8">
+                  <p className="text-muted-foreground">Loading team members...</p>
+                </div>
+              ) : teamMembers.length === 0 ? (
+                <div className="col-span-full text-center py-8">
+                  <p className="text-muted-foreground">No team members found.</p>
+                </div>
+              ) : (
+                teamMembers.map((member) => (
+                  <Card key={member.id} className="overflow-hidden hover:shadow-lg transition-shadow">
+                    <CardContent className="p-6 flex flex-col items-center text-center">
+                      <Avatar className="h-24 w-24 mb-4">
+                        <AvatarImage src={member.avatar} alt={member.name} />
+                        <AvatarFallback>{member.name.slice(0, 2)}</AvatarFallback>
+                      </Avatar>
+                      <h3 className="text-xl font-bold mb-1">{member.name}</h3>
+                      <p className="text-primary font-medium mb-3">{member.position}</p>
+                      <p className="text-muted-foreground">{member.bio}</p>
+                    </CardContent>
+                  </Card>
+                ))
+              )}
             </div>
           </div>
         </section>

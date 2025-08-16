@@ -38,6 +38,39 @@ export type Database = {
         }
         Relationships: []
       }
+      team_members: {
+        Row: {
+          avatar: string
+          bio: string
+          created_at: string
+          display_order: number
+          id: string
+          name: string
+          position: string
+          updated_at: string
+        }
+        Insert: {
+          avatar: string
+          bio: string
+          created_at?: string
+          display_order?: number
+          id?: string
+          name: string
+          position: string
+          updated_at?: string
+        }
+        Update: {
+          avatar?: string
+          bio?: string
+          created_at?: string
+          display_order?: number
+          id?: string
+          name?: string
+          position?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
