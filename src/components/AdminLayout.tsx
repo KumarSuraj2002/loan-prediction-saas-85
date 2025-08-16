@@ -21,12 +21,16 @@ const AdminLayout = () => {
   };
 
   return (
-    <div className="min-h-screen flex bg-background">
-      <AdminSidebar />
+    <div className="h-screen flex bg-background overflow-hidden">
+      {/* Fixed Sidebar */}
+      <div className="fixed left-0 top-0 h-full z-10">
+        <AdminSidebar />
+      </div>
       
-      <div className="flex-1 flex flex-col">
-        {/* Top Header */}
-        <header className="h-16 bg-card border-b border-border flex items-center justify-between px-6">
+      {/* Main Content Area with proper left margin for sidebar */}
+      <div className="flex-1 flex flex-col ml-64">
+        {/* Top Header - Fixed */}
+        <header className="h-16 bg-card border-b border-border flex items-center justify-between px-6 flex-shrink-0">
           <div>
             <h1 className="text-xl font-semibold text-foreground">FINANCE BUDDY</h1>
           </div>
@@ -36,8 +40,8 @@ const AdminLayout = () => {
           </Button>
         </header>
 
-        {/* Main Content */}
-        <main className="flex-1 p-6">
+        {/* Main Content - Scrollable */}
+        <main className="flex-1 p-6 overflow-y-auto">
           <Outlet />
         </main>
       </div>
