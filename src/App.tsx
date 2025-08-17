@@ -23,6 +23,12 @@ import LoanApplication from "./pages/LoanApplication";
 import AdminLogin from "./pages/AdminLogin";
 import AdminDashboard from "./pages/AdminDashboard";
 import AdminSettings from "./pages/AdminSettings";
+import AdminLoanApplications from "./pages/AdminLoanApplications";
+import AdminUsers from "./pages/AdminUsers";
+import AdminUserQueries from "./pages/AdminUserQueries";
+import AdminRatingsReviews from "./pages/AdminRatingsReviews";
+import AdminLoanProducts from "./pages/AdminLoanProducts";
+import AdminBankPartners from "./pages/AdminBankPartners";
 import AdminLayout from "./components/AdminLayout";
 import MaintenanceWrapper from "./components/MaintenanceWrapper";
 
@@ -40,6 +46,16 @@ const App = () => (
           <Route path="/admin/*" element={<AdminLayout />}>
             <Route path="dashboard" element={<AdminDashboard />} />
             <Route path="settings" element={<AdminSettings />} />
+            <Route path="loan-applications" element={<AdminLoanApplications status="all" />} />
+            <Route path="loan-applications/new" element={<AdminLoanApplications status="pending" />} />
+            <Route path="loan-applications/approved" element={<AdminLoanApplications status="approved" />} />
+            <Route path="loan-applications/rejected" element={<AdminLoanApplications status="rejected" />} />
+            <Route path="loan-applications/records" element={<AdminLoanApplications status="all" />} />
+            <Route path="users" element={<AdminUsers />} />
+            <Route path="user-queries" element={<AdminUserQueries />} />
+            <Route path="ratings-reviews" element={<AdminRatingsReviews />} />
+            <Route path="loan-products" element={<AdminLoanProducts />} />
+            <Route path="bank-partners" element={<AdminBankPartners />} />
           </Route>
           
           {/* Public routes - wrapped with maintenance mode */}

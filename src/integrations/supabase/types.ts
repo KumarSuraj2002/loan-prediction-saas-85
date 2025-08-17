@@ -14,6 +14,150 @@ export type Database = {
   }
   public: {
     Tables: {
+      banks: {
+        Row: {
+          account_types: string[]
+          created_at: string
+          description: string
+          features: string[]
+          id: string
+          interest_rates: Json
+          locations: string[]
+          logo_text: string
+          name: string
+          rating: number
+          updated_at: string
+        }
+        Insert: {
+          account_types?: string[]
+          created_at?: string
+          description?: string
+          features?: string[]
+          id?: string
+          interest_rates?: Json
+          locations?: string[]
+          logo_text: string
+          name: string
+          rating?: number
+          updated_at?: string
+        }
+        Update: {
+          account_types?: string[]
+          created_at?: string
+          description?: string
+          features?: string[]
+          id?: string
+          interest_rates?: Json
+          locations?: string[]
+          logo_text?: string
+          name?: string
+          rating?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      loan_applications: {
+        Row: {
+          applicant_name: string
+          application_data: Json | null
+          application_status: string
+          created_at: string
+          credit_score: number | null
+          email: string
+          employment_status: string | null
+          id: string
+          loan_amount: number
+          loan_type: string
+          monthly_income: number
+          notes: string | null
+          phone: string | null
+          updated_at: string
+        }
+        Insert: {
+          applicant_name: string
+          application_data?: Json | null
+          application_status?: string
+          created_at?: string
+          credit_score?: number | null
+          email: string
+          employment_status?: string | null
+          id?: string
+          loan_amount: number
+          loan_type: string
+          monthly_income: number
+          notes?: string | null
+          phone?: string | null
+          updated_at?: string
+        }
+        Update: {
+          applicant_name?: string
+          application_data?: Json | null
+          application_status?: string
+          created_at?: string
+          credit_score?: number | null
+          email?: string
+          employment_status?: string | null
+          id?: string
+          loan_amount?: number
+          loan_type?: string
+          monthly_income?: number
+          notes?: string | null
+          phone?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      loan_products: {
+        Row: {
+          created_at: string
+          description: string
+          eligibility_criteria: Json | null
+          features: string[] | null
+          id: string
+          interest_rate_max: number
+          interest_rate_min: number
+          is_active: boolean
+          max_amount: number
+          max_term_months: number
+          min_amount: number
+          min_term_months: number
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description: string
+          eligibility_criteria?: Json | null
+          features?: string[] | null
+          id?: string
+          interest_rate_max?: number
+          interest_rate_min?: number
+          is_active?: boolean
+          max_amount?: number
+          max_term_months?: number
+          min_amount?: number
+          min_term_months?: number
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string
+          eligibility_criteria?: Json | null
+          features?: string[] | null
+          id?: string
+          interest_rate_max?: number
+          interest_rate_min?: number
+          is_active?: boolean
+          max_amount?: number
+          max_term_months?: number
+          min_amount?: number
+          min_term_months?: number
+          name?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       site_settings: {
         Row: {
           created_at: string
@@ -68,6 +212,126 @@ export type Database = {
           name?: string
           position?: string
           updated_at?: string
+        }
+        Relationships: []
+      }
+      testimonials: {
+        Row: {
+          avatar: string | null
+          company: string | null
+          content: string
+          created_at: string
+          id: string
+          is_published: boolean
+          name: string
+          rating: number | null
+          role: string
+          updated_at: string
+        }
+        Insert: {
+          avatar?: string | null
+          company?: string | null
+          content: string
+          created_at?: string
+          id?: string
+          is_published?: boolean
+          name: string
+          rating?: number | null
+          role: string
+          updated_at?: string
+        }
+        Update: {
+          avatar?: string | null
+          company?: string | null
+          content?: string
+          created_at?: string
+          id?: string
+          is_published?: boolean
+          name?: string
+          rating?: number | null
+          role?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      user_queries: {
+        Row: {
+          admin_response: string | null
+          created_at: string
+          email: string
+          id: string
+          message: string
+          name: string
+          phone: string | null
+          query_type: string | null
+          status: string
+          subject: string
+          updated_at: string
+        }
+        Insert: {
+          admin_response?: string | null
+          created_at?: string
+          email: string
+          id?: string
+          message: string
+          name: string
+          phone?: string | null
+          query_type?: string | null
+          status?: string
+          subject: string
+          updated_at?: string
+        }
+        Update: {
+          admin_response?: string | null
+          created_at?: string
+          email?: string
+          id?: string
+          message?: string
+          name?: string
+          phone?: string | null
+          query_type?: string | null
+          status?: string
+          subject?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      users: {
+        Row: {
+          created_at: string
+          email: string
+          full_name: string
+          id: string
+          last_login: string | null
+          phone: string | null
+          registration_date: string
+          status: string
+          updated_at: string
+          user_data: Json | null
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          full_name: string
+          id?: string
+          last_login?: string | null
+          phone?: string | null
+          registration_date?: string
+          status?: string
+          updated_at?: string
+          user_data?: Json | null
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          full_name?: string
+          id?: string
+          last_login?: string | null
+          phone?: string | null
+          registration_date?: string
+          status?: string
+          updated_at?: string
+          user_data?: Json | null
         }
         Relationships: []
       }
