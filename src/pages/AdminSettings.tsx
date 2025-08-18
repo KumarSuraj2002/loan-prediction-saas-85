@@ -115,13 +115,22 @@ const AdminSettings = () => {
   const updateSetting = async (key: string, value: any) => {
     try {
       console.log('Updating setting:', key, value);
+      
+      // Check authentication status
+      const { data: { user }, error: authError } = await supabase.auth.getUser();
+      console.log('Current user:', user);
+      console.log('Auth error:', authError);
+      
       const { error } = await supabase
         .from('site_settings')
-        .update({ setting_value: value })
+        .update({ setting_value: value, updated_at: new Date().toISOString() })
         .eq('setting_key', key);
 
       if (error) throw error;
       console.log('Setting updated successfully');
+
+      // Refresh the data after update
+      await fetchSettings();
 
       toast({
         title: "Success",

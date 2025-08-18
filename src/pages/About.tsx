@@ -16,13 +16,48 @@ interface TeamMember {
   display_order: number;
 }
 
+interface SiteSettings {
+  site_title: string;
+  about_us: string;
+}
+
 const About = () => {
   const [teamMembers, setTeamMembers] = useState<TeamMember[]>([]);
+  const [siteSettings, setSiteSettings] = useState<SiteSettings>({
+    site_title: 'FinanceBuddy',
+    about_us: 'We\'re on a mission to simplify financial decisions for everyone through innovative technology and personalized insights.'
+  });
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     fetchTeamMembers();
+    fetchSiteSettings();
   }, []);
+
+  const fetchSiteSettings = async () => {
+    try {
+      console.log('Fetching site settings...');
+      const { data, error } = await supabase
+        .from('site_settings')
+        .select('*')
+        .eq('setting_key', 'general')
+        .single();
+
+      console.log('Site settings response:', { data, error });
+
+      if (error) {
+        console.error('Error fetching site settings:', error);
+        return;
+      }
+      
+      if (data && data.setting_value) {
+        console.log('Setting site settings to:', data.setting_value);
+        setSiteSettings(data.setting_value as unknown as SiteSettings);
+      }
+    } catch (error) {
+      console.error('Error fetching site settings:', error);
+    }
+  };
 
   const fetchTeamMembers = async () => {
     try {
@@ -49,9 +84,9 @@ const About = () => {
             <div className="flex justify-center mb-6">
               <Users className="h-12 w-12 text-primary" />
             </div>
-            <h1 className="text-3xl md:text-5xl font-bold mb-6">Our Mission</h1>
+            <h1 className="text-3xl md:text-5xl font-bold mb-6">About {siteSettings.site_title}</h1>
             <p className="text-xl md:text-2xl text-muted-foreground max-w-3xl mx-auto">
-              We're on a mission to simplify financial decisions for everyone through innovative technology and personalized insights.
+              {siteSettings.about_us}
             </p>
           </div>
         </section>
