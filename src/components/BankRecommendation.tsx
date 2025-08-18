@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import {
@@ -33,7 +33,7 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { Search, CreditCard, ChevronRight, ChevronDown } from "lucide-react";
 import { UserPreferences } from "@/data/loanDataTypes";
-import { bankOptions, getMatchingBanks, additionalBanks } from "@/data/bankOptions";
+import { supabase } from "@/integrations/supabase/client";
 
 const formSchema = z.object({
   bankingNeed: z.string().min(1, "Please select your primary banking need"),
@@ -96,6 +96,28 @@ const BankRecommendation = () => {
   const [matchingBanks, setMatchingBanks] = useState<any[]>([]);
   const [isSearching, setIsSearching] = useState(false);
   const [showMore, setShowMore] = useState(false);
+  const [allBanks, setAllBanks] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchBanks = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('banks')
+          .select('*')
+          .order('rating', { ascending: false });
+
+        if (error) throw error;
+        setAllBanks(data || []);
+      } catch (error) {
+        console.error('Error fetching banks:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchBanks();
+  }, []);
 
   const form = useForm<UserPreferences>({
     resolver: zodResolver(formSchema),
@@ -112,26 +134,36 @@ const BankRecommendation = () => {
     setIsSearching(true);
     setShowMore(false);
     
-    // In a real app, this would be an API call to a backend service
+    // Filter banks based on preferences
     setTimeout(() => {
-      const matchedBanks = getMatchingBanks({
-        ...data,
-        // Map the feature IDs to the actual feature names used in the bank data
-        preferredFeatures: data.preferredFeatures.map(featureId => {
-          const feature = featureOptions.find(f => f.id === featureId);
-          return feature ? feature.label : "";
-        }).filter(Boolean)
+      const filtered = allBanks.filter(bank => {
+        // Basic filtering logic - can be enhanced based on your requirements
+        if (data.locationPreference && data.locationPreference !== "Any") {
+          if (!bank.locations.includes(data.locationPreference) && !bank.locations.includes("Online")) {
+            return false;
+          }
+        }
+        
+        if (data.preferredFeatures.length > 0) {
+          const hasMatchingFeature = data.preferredFeatures.some(featureId => {
+            const feature = featureOptions.find(f => f.id === featureId);
+            return feature && bank.features.some((bankFeature: string) => 
+              bankFeature.toLowerCase().includes(feature.label.toLowerCase())
+            );
+          });
+          if (!hasMatchingFeature) return false;
+        }
+        
+        return true;
       });
-      setMatchingBanks(matchedBanks);
+      
+      setMatchingBanks(filtered);
       setIsSearching(false);
     }, 1500);
   };
 
   // Display all banks initially when no search has been performed
-  const initialBanks = matchingBanks.length > 0 ? matchingBanks : bankOptions;
-  
-  // All banks to be displayed (initial + additional if showMore is true)
-  const allBanks = [...initialBanks, ...(showMore ? additionalBanks : [])];
+  const displayBanks = matchingBanks.length > 0 ? matchingBanks : allBanks;
 
   const handleViewMore = () => {
     setShowMore(true);
@@ -359,56 +391,44 @@ const BankRecommendation = () => {
                       <TabsTrigger value="traditional" className="text-sm">Traditional Banks</TabsTrigger>
                     </TabsList>
                     <TabsContent value="all" className="mt-4">
-                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                        {bankOptions.map((bank) => (
-                          <div 
-                            key={bank.id} 
-                            className="flex flex-col items-center p-4 border rounded-lg bg-card hover:shadow-md transition-shadow cursor-pointer"
-                            onClick={() => handleBankClick(bank)}
-                          >
-                            <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-primary/10 flex items-center justify-center mb-3">
-                              <span className="text-base sm:text-lg font-bold text-primary">{bank.logoText}</span>
-                            </div>
-                            <h3 className="text-sm sm:text-base font-medium text-center">{bank.name}</h3>
-                            <div className="flex mt-2">
-                              {Array(5).fill(0).map((_, i) => (
-                                <span key={i} className={`text-xs ${i < Math.floor(bank.rating) ? "text-amber-500" : "text-gray-300"}`}>★</span>
-                              ))}
-                            </div>
-                          </div>
-                        ))}
-                        
-                        {showMore ? (
-                          additionalBanks.map((bank) => (
+                      {loading ? (
+                        <div className="flex justify-center py-8">
+                          <div className="text-muted-foreground">Loading banks...</div>
+                        </div>
+                      ) : (
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                          {displayBanks.map((bank) => (
                             <div 
                               key={bank.id} 
-                              className="flex flex-col items-center p-4 border rounded-lg bg-card hover:shadow-md transition-shadow animate-fade-in cursor-pointer"
+                              className="flex flex-col items-center p-4 border rounded-lg bg-card hover:shadow-md transition-shadow cursor-pointer"
                               onClick={() => handleBankClick(bank)}
                             >
-                              <div className="w-20 h-20 rounded-full bg-primary/10 flex items-center justify-center mb-3">
-                                <span className="text-lg font-bold text-primary">{bank.logoText}</span>
+                              <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-primary/10 flex items-center justify-center mb-3">
+                                <span className="text-base sm:text-lg font-bold text-primary">{bank.logo_text}</span>
                               </div>
-                              <h3 className="text-base font-medium text-center">{bank.name}</h3>
+                              <h3 className="text-sm sm:text-base font-medium text-center">{bank.name}</h3>
                               <div className="flex mt-2">
                                 {Array(5).fill(0).map((_, i) => (
                                   <span key={i} className={`text-xs ${i < Math.floor(bank.rating) ? "text-amber-500" : "text-gray-300"}`}>★</span>
                                 ))}
                               </div>
                             </div>
-                          ))
-                        ) : (
-                          <div className="md:col-span-3 mt-4 flex justify-center">
-                            <Button 
-                              variant="outline" 
-                              onClick={handleViewMore}
-                              className="group flex items-center gap-2"
-                            >
-                              View More Banks
-                              <ChevronDown className="h-4 w-4 transition-transform group-hover:translate-y-1" />
-                            </Button>
-                          </div>
-                        )}
-                      </div>
+                          ))}
+                          
+                          {!showMore && displayBanks.length > 6 && (
+                            <div className="md:col-span-3 mt-4 flex justify-center">
+                              <Button 
+                                variant="outline" 
+                                onClick={handleViewMore}
+                                className="group flex items-center gap-2"
+                              >
+                                View More Banks
+                                <ChevronDown className="h-4 w-4 transition-transform group-hover:translate-y-1" />
+                              </Button>
+                            </div>
+                          )}
+                        </div>
+                      )}
                     </TabsContent>
                     <TabsContent value="online" className="mt-4">
                       <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
@@ -419,7 +439,7 @@ const BankRecommendation = () => {
                             onClick={() => handleBankClick(bank)}
                           >
                             <div className="w-20 h-20 rounded-full bg-primary/10 flex items-center justify-center mb-3">
-                              <span className="text-lg font-bold text-primary">{bank.logoText}</span>
+                              <span className="text-lg font-bold text-primary">{bank.logo_text}</span>
                             </div>
                             <h3 className="text-base font-medium text-center">{bank.name}</h3>
                             <div className="flex mt-2">
@@ -429,18 +449,6 @@ const BankRecommendation = () => {
                             </div>
                           </div>
                         ))}
-                        {!showMore && (
-                          <div className="md:col-span-3 mt-4 flex justify-center">
-                            <Button 
-                              variant="outline" 
-                              onClick={handleViewMore}
-                              className="group flex items-center gap-2"
-                            >
-                              View More Banks
-                              <ChevronDown className="h-4 w-4 transition-transform group-hover:translate-y-1" />
-                            </Button>
-                          </div>
-                        )}
                       </div>
                     </TabsContent>
                     <TabsContent value="traditional" className="mt-4">
@@ -452,7 +460,7 @@ const BankRecommendation = () => {
                             onClick={() => handleBankClick(bank)}
                           >
                             <div className="w-20 h-20 rounded-full bg-primary/10 flex items-center justify-center mb-3">
-                              <span className="text-lg font-bold text-primary">{bank.logoText}</span>
+                              <span className="text-lg font-bold text-primary">{bank.logo_text}</span>
                             </div>
                             <h3 className="text-base font-medium text-center">{bank.name}</h3>
                             <div className="flex mt-2">
@@ -462,18 +470,6 @@ const BankRecommendation = () => {
                             </div>
                           </div>
                         ))}
-                        {!showMore && (
-                          <div className="md:col-span-3 mt-4 flex justify-center">
-                            <Button 
-                              variant="outline" 
-                              onClick={handleViewMore}
-                              className="group flex items-center gap-2"
-                            >
-                              View More Banks
-                              <ChevronDown className="h-4 w-4 transition-transform group-hover:translate-y-1" />
-                            </Button>
-                          </div>
-                        )}
                       </div>
                     </TabsContent>
                   </Tabs>

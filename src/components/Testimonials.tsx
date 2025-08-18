@@ -1,5 +1,5 @@
 
-import { useRef, useEffect } from "react";
+import { useRef, useEffect, useState } from "react";
 import { 
   Carousel,
   CarouselContent,
@@ -7,61 +7,44 @@ import {
 } from "@/components/ui/carousel";
 import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { supabase } from "@/integrations/supabase/client";
+import { Star } from "lucide-react";
 
 interface Testimonial {
-  id: number;
+  id: string;
   name: string;
   role: string;
-  company: string;
-  avatar: string;
+  company?: string;
+  avatar?: string;
   content: string;
+  rating: number;
 }
-
-const testimonials: Testimonial[] = [
-  {
-    id: 1,
-    name: "Sarah Johnson",
-    role: "Small Business Owner",
-    company: "Bright Ideas Co.",
-    avatar: "https://images.unsplash.com/photo-1649972904349-6e44c42644a7?w=150&h=150&fit=crop&crop=faces",
-    content: "This platform helped me secure a business loan with favorable terms. The loan prediction tool was spot-on with its assessment!"
-  },
-  {
-    id: 2,
-    name: "Michael Chen",
-    role: "First-time Homebuyer",
-    company: "",
-    avatar: "https://images.unsplash.com/photo-1581092795360-fd1ca04f0952?w=150&h=150&fit=crop&crop=faces",
-    content: "As someone new to mortgages, the bank recommendation system saved me countless hours of research and helped me find the perfect lender."
-  },
-  {
-    id: 3,
-    name: "Priya Patel",
-    role: "Financial Analyst",
-    company: "Global Investments",
-    avatar: "https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?w=150&h=150&fit=crop&crop=faces",
-    content: "The accuracy of the loan prediction algorithm is impressive. I recommend this tool to all my clients looking for financing options."
-  },
-  {
-    id: 4,
-    name: "James Wilson",
-    role: "Entrepreneur",
-    company: "Tech Innovations",
-    avatar: "https://images.unsplash.com/photo-1581092795360-fd1ca04f0952?w=150&h=150&fit=crop&crop=faces",
-    content: "The personalized bank matching feature connected me with a lender that perfectly understood my startup's unique financial needs."
-  },
-  {
-    id: 5,
-    name: "Olivia Martinez",
-    role: "Real Estate Agent",
-    company: "Premier Properties",
-    avatar: "https://images.unsplash.com/photo-1649972904349-6e44c42644a7?w=150&h=150&fit=crop&crop=faces",
-    content: "I now refer all my clients to this platform. The financial insights have helped numerous families secure their dream homes."
-  }
-];
 
 const Testimonials = () => {
   const carouselRef = useRef<HTMLDivElement>(null);
+  const [testimonials, setTestimonials] = useState<Testimonial[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchTestimonials = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('testimonials')
+          .select('*')
+          .eq('is_published', true)
+          .order('created_at', { ascending: false });
+
+        if (error) throw error;
+        setTestimonials(data || []);
+      } catch (error) {
+        console.error('Error fetching testimonials:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchTestimonials();
+  }, []);
   
   useEffect(() => {
     const speed = 1; // pixels per millisecond - adjust for faster/slower animation
@@ -102,6 +85,36 @@ const Testimonials = () => {
     };
   }, []);
   
+  if (loading) {
+    return (
+      <section className="py-16 bg-background overflow-hidden">
+        <div className="container px-4 md:px-6">
+          <div className="flex flex-col items-center justify-center text-center mb-12">
+            <h2 className="text-3xl font-bold tracking-tight">What Our Users Say</h2>
+            <p className="mt-4 text-xl text-muted-foreground max-w-[800px]">
+              Loading testimonials...
+            </p>
+          </div>
+        </div>
+      </section>
+    );
+  }
+
+  if (testimonials.length === 0) {
+    return (
+      <section className="py-16 bg-background overflow-hidden">
+        <div className="container px-4 md:px-6">
+          <div className="flex flex-col items-center justify-center text-center mb-12">
+            <h2 className="text-3xl font-bold tracking-tight">What Our Users Say</h2>
+            <p className="mt-4 text-xl text-muted-foreground max-w-[800px]">
+              No testimonials available at the moment.
+            </p>
+          </div>
+        </div>
+      </section>
+    );
+  }
+
   return (
     <section className="py-16 bg-background overflow-hidden">
       <div className="container px-4 md:px-6">
@@ -131,6 +144,14 @@ const Testimonials = () => {
                             {testimonial.role}
                             {testimonial.company && ` at ${testimonial.company}`}
                           </p>
+                          <div className="flex mt-1">
+                            {Array.from({ length: 5 }, (_, i) => (
+                              <Star
+                                key={i}
+                                className={`h-3 w-3 ${i < testimonial.rating ? 'fill-yellow-400 text-yellow-400' : 'text-gray-300'}`}
+                              />
+                            ))}
+                          </div>
                         </div>
                       </div>
                       <blockquote className="text-muted-foreground flex-1 italic">
