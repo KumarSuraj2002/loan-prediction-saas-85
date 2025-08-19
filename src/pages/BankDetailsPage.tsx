@@ -5,7 +5,7 @@ import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/componen
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableRow } from "@/components/ui/table";
 import { ArrowLeft, CreditCard, Home, Car, GraduationCap } from "lucide-react";
-import { bankOptions, additionalBanks } from "@/data/bankOptions";
+import { supabase } from "@/integrations/supabase/client";
 
 const BankDetailsPage = () => {
   const { bankId } = useParams();
@@ -13,15 +13,39 @@ const BankDetailsPage = () => {
   const [bank, setBank] = useState<any>(null);
 
   useEffect(() => {
-    // Find the bank from all available banks
-    const allBanks = [...bankOptions, ...additionalBanks];
-    const foundBank = allBanks.find(b => b.id === bankId);
-    
-    if (foundBank) {
-      setBank(foundBank);
-    } else {
-      // Redirect to home if bank not found
-      navigate('/');
+    const fetchBank = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('banks')
+          .select('*')
+          .eq('id', bankId)
+          .single();
+
+        if (error) throw error;
+        
+        if (data) {
+          // Transform Supabase data to match expected format
+          const transformedBank = {
+            id: data.id,
+            name: data.name,
+            logoText: data.logo_text,
+            rating: data.rating,
+            features: data.features,
+            accountTypes: data.account_types,
+            interestRates: data.interest_rates,
+            locations: data.locations,
+            description: data.description
+          };
+          setBank(transformedBank);
+        }
+      } catch (error) {
+        console.error('Error fetching bank:', error);
+        navigate('/');
+      }
+    };
+
+    if (bankId) {
+      fetchBank();
     }
   }, [bankId, navigate]);
 

@@ -7,7 +7,7 @@ import { Table, TableBody, TableCell, TableRow } from "@/components/ui/table";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Check, AlertCircle, ArrowLeft, ArrowRight } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import { bankOptions, additionalBanks } from "@/data/bankOptions";
+import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 
 const LoanDetailsPage = () => {
@@ -18,19 +18,43 @@ const LoanDetailsPage = () => {
   const { toast } = useToast();
 
   useEffect(() => {
-    // Find the bank from all available banks
-    const allBanks = [...bankOptions, ...additionalBanks];
-    const foundBank = allBanks.find(b => b.id === bankId);
-    
-    if (foundBank) {
-      setBank(foundBank);
-      
-      // Generate loan details based on loan type and bank data
-      const details = generateLoanDetails(loanType as string, foundBank);
-      setLoanDetails(details);
-    } else {
-      // Redirect to home if bank not found
-      navigate('/');
+    const fetchBank = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('banks')
+          .select('*')
+          .eq('id', bankId)
+          .single();
+
+        if (error) throw error;
+        
+        if (data) {
+          // Transform Supabase data to match expected format
+          const transformedBank = {
+            id: data.id,
+            name: data.name,
+            logoText: data.logo_text,
+            rating: data.rating,
+            features: data.features,
+            accountTypes: data.account_types,
+            interestRates: data.interest_rates,
+            locations: data.locations,
+            description: data.description
+          };
+          setBank(transformedBank);
+          
+          // Generate loan details based on loan type and bank data
+          const details = generateLoanDetails(loanType as string, transformedBank);
+          setLoanDetails(details);
+        }
+      } catch (error) {
+        console.error('Error fetching bank:', error);
+        navigate('/');
+      }
+    };
+
+    if (bankId) {
+      fetchBank();
     }
   }, [bankId, loanType, navigate]);
 
