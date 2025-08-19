@@ -21,6 +21,7 @@ import BankDetailsPage from "./pages/BankDetailsPage";
 import LoanDetailsPage from "./pages/LoanDetailsPage";
 import LoanApplication from "./pages/LoanApplication";
 import AdminLogin from "./pages/AdminLogin";
+import AdminSetup from "./pages/AdminSetup";
 import AdminDashboard from "./pages/AdminDashboard";
 import AdminSettings from "./pages/AdminSettings";
 import AdminLoanApplications from "./pages/AdminLoanApplications";
@@ -43,6 +44,7 @@ const App = () => (
         <Routes>
           {/* Admin routes - not affected by maintenance mode */}
           <Route path="/admin" element={<AdminLogin />} />
+          <Route path="/admin/setup" element={<AdminSetup />} />
           <Route path="/admin/*" element={<AdminLayout />}>
             <Route path="dashboard" element={<AdminDashboard />} />
             <Route path="settings" element={<AdminSettings />} />
