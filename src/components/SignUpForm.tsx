@@ -14,6 +14,8 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Eye, EyeOff } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 const formSchema = z.object({
   name: z.string().min(2, {
@@ -34,6 +36,7 @@ const formSchema = z.object({
 const SignUpForm = ({ onToggleForm }: { onToggleForm: () => void }) => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
   
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -45,9 +48,31 @@ const SignUpForm = ({ onToggleForm }: { onToggleForm: () => void }) => {
     },
   });
 
-  const onSubmit = (values: z.infer<typeof formSchema>) => {
-    console.log(values);
-    // Handle sign up logic here
+  const onSubmit = async (values: z.infer<typeof formSchema>) => {
+    setLoading(true);
+    try {
+      const { error } = await supabase.auth.signUp({
+        email: values.email,
+        password: values.password,
+        options: {
+          emailRedirectTo: `${window.location.origin}/`,
+          data: {
+            full_name: values.name,
+          }
+        }
+      });
+
+      if (error) {
+        toast.error(error.message);
+      } else {
+        toast.success("Check your email for the verification link!");
+        form.reset();
+      }
+    } catch (error) {
+      toast.error("An unexpected error occurred");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -147,7 +172,9 @@ const SignUpForm = ({ onToggleForm }: { onToggleForm: () => void }) => {
               </FormItem>
             )}
           />
-          <Button type="submit" className="w-full">Sign Up</Button>
+          <Button type="submit" className="w-full" disabled={loading}>
+            {loading ? "Creating Account..." : "Sign Up"}
+          </Button>
         </form>
       </Form>
       
