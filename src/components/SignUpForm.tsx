@@ -16,6 +16,7 @@ import { Input } from "@/components/ui/input";
 import { Eye, EyeOff } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import OTPVerification from "./OTPVerification";
 
 const formSchema = z.object({
   name: z.string().min(2, {
@@ -51,6 +52,8 @@ const SignUpForm = ({ onToggleForm }: { onToggleForm: () => void }) => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [showOTPVerification, setShowOTPVerification] = useState(false);
+  const [phoneForVerification, setPhoneForVerification] = useState("");
   
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -80,7 +83,15 @@ const SignUpForm = ({ onToggleForm }: { onToggleForm: () => void }) => {
             }
           }
         });
+        
+        if (authResponse?.error) {
+          toast.error(authResponse.error.message);
+        } else {
+          toast.success("Check your email for the verification link!");
+          form.reset();
+        }
       } else if (values.authMethod === "phone" && values.phone) {
+        // For phone, we first send OTP
         authResponse = await supabase.auth.signUp({
           phone: values.phone,
           password: values.password,
@@ -90,17 +101,14 @@ const SignUpForm = ({ onToggleForm }: { onToggleForm: () => void }) => {
             }
           }
         });
-      }
-
-      if (authResponse?.error) {
-        toast.error(authResponse.error.message);
-      } else {
-        if (values.authMethod === "email") {
-          toast.success("Check your email for the verification link!");
+        
+        if (authResponse?.error) {
+          toast.error(authResponse.error.message);
         } else {
-          toast.success("Check your phone for the verification code!");
+          setPhoneForVerification(values.phone);
+          setShowOTPVerification(true);
+          toast.success("OTP sent to your phone number!");
         }
-        form.reset();
       }
     } catch (error) {
       toast.error("An unexpected error occurred");
@@ -109,7 +117,29 @@ const SignUpForm = ({ onToggleForm }: { onToggleForm: () => void }) => {
     }
   };
 
+  const handleOTPVerified = () => {
+    setShowOTPVerification(false);
+    setPhoneForVerification("");
+    form.reset();
+    toast.success("Account created successfully!");
+  };
+
+  const handleBackFromOTP = () => {
+    setShowOTPVerification(false);
+    setPhoneForVerification("");
+  };
+
   const watchAuthMethod = form.watch("authMethod");
+
+  if (showOTPVerification) {
+    return (
+      <OTPVerification 
+        phone={phoneForVerification}
+        onVerified={handleOTPVerified}
+        onBack={handleBackFromOTP}
+      />
+    );
+  }
 
   return (
     <div className="space-y-6">
