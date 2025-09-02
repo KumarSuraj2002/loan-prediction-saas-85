@@ -21,15 +21,29 @@ const formSchema = z.object({
   name: z.string().min(2, {
     message: "Name must be at least 2 characters",
   }),
+  authMethod: z.enum(["email", "phone"], {
+    required_error: "Please select authentication method",
+  }),
   email: z.string().email({
     message: "Invalid email address",
-  }),
+  }).optional(),
+  phone: z.string().min(10, {
+    message: "Phone number must be at least 10 digits",
+  }).optional(),
   password: z.string().min(6, {
     message: "Password must be at least 6 characters",
   }),
   confirmPassword: z.string(),
-}).refine((data) => data.password === data.confirmPassword, {
-  message: "Passwords do not match",
+}).refine((data) => {
+  if (data.authMethod === "email" && !data.email) {
+    return false;
+  }
+  if (data.authMethod === "phone" && !data.phone) {
+    return false;
+  }
+  return data.password === data.confirmPassword;
+}, {
+  message: "Passwords do not match or required field missing",
   path: ["confirmPassword"],
 });
 
@@ -42,7 +56,9 @@ const SignUpForm = ({ onToggleForm }: { onToggleForm: () => void }) => {
     resolver: zodResolver(formSchema),
     defaultValues: {
       name: "",
+      authMethod: "email",
       email: "",
+      phone: "",
       password: "",
       confirmPassword: "",
     },
@@ -51,21 +67,39 @@ const SignUpForm = ({ onToggleForm }: { onToggleForm: () => void }) => {
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     setLoading(true);
     try {
-      const { error } = await supabase.auth.signUp({
-        email: values.email,
-        password: values.password,
-        options: {
-          emailRedirectTo: `${window.location.origin}/`,
-          data: {
-            full_name: values.name,
+      let authResponse;
+      
+      if (values.authMethod === "email" && values.email) {
+        authResponse = await supabase.auth.signUp({
+          email: values.email,
+          password: values.password,
+          options: {
+            emailRedirectTo: `${window.location.origin}/`,
+            data: {
+              full_name: values.name,
+            }
           }
-        }
-      });
+        });
+      } else if (values.authMethod === "phone" && values.phone) {
+        authResponse = await supabase.auth.signUp({
+          phone: values.phone,
+          password: values.password,
+          options: {
+            data: {
+              full_name: values.name,
+            }
+          }
+        });
+      }
 
-      if (error) {
-        toast.error(error.message);
+      if (authResponse?.error) {
+        toast.error(authResponse.error.message);
       } else {
-        toast.success("Check your email for the verification link!");
+        if (values.authMethod === "email") {
+          toast.success("Check your email for the verification link!");
+        } else {
+          toast.success("Check your phone for the verification code!");
+        }
         form.reset();
       }
     } catch (error) {
@@ -74,6 +108,8 @@ const SignUpForm = ({ onToggleForm }: { onToggleForm: () => void }) => {
       setLoading(false);
     }
   };
+
+  const watchAuthMethod = form.watch("authMethod");
 
   return (
     <div className="space-y-6">
@@ -99,17 +135,53 @@ const SignUpForm = ({ onToggleForm }: { onToggleForm: () => void }) => {
           />
           <FormField
             control={form.control}
-            name="email"
+            name="authMethod"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Email</FormLabel>
+                <FormLabel>Authentication Method</FormLabel>
                 <FormControl>
-                  <Input placeholder="johndoe@example.com" {...field} />
+                  <select 
+                    {...field} 
+                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                  >
+                    <option value="email">Email Address</option>
+                    <option value="phone">Phone Number</option>
+                  </select>
                 </FormControl>
                 <FormMessage />
               </FormItem>
             )}
           />
+          {watchAuthMethod === "email" && (
+            <FormField
+              control={form.control}
+              name="email"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Email</FormLabel>
+                  <FormControl>
+                    <Input placeholder="johndoe@example.com" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          )}
+          {watchAuthMethod === "phone" && (
+            <FormField
+              control={form.control}
+              name="phone"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Phone Number</FormLabel>
+                  <FormControl>
+                    <Input placeholder="+1234567890" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          )}
           <FormField
             control={form.control}
             name="password"
