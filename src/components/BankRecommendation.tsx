@@ -174,29 +174,29 @@ const BankRecommendation = () => {
   };
 
   return (
-    <section id="bank-recommendation" className="py-16 px-4 bg-accent">
-      <div className="container">
-        <div className="flex flex-col items-center text-center mb-10">
-          <h2 className="text-3xl font-bold">Find Your Ideal Bank</h2>
-          <p className="mt-2 text-lg text-muted-foreground max-w-[700px]">
+    <section id="bank-recommendation" className="responsive-section-padding bg-accent">
+      <div className="responsive-container">
+        <div className="flex flex-col items-center text-center mb-8 sm:mb-10">
+          <h2 className="responsive-text-3xl font-bold">Find Your Ideal Bank</h2>
+          <p className="mt-2 sm:mt-3 responsive-text-xl text-muted-foreground max-w-[700px]">
             Answer a few questions and we'll recommend the best banks for your specific needs.
           </p>
         </div>
         
         <div className="grid lg:grid-cols-3 gap-6 lg:gap-8 max-w-6xl mx-auto">
           <Card className="lg:col-span-1 border shadow-sm">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Search className="h-5 w-5 text-primary" />
+            <CardHeader className="p-4 sm:p-6">
+              <CardTitle className="flex items-center gap-2 text-lg sm:text-xl">
+                <Search className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
                 Bank Finder
               </CardTitle>
-              <CardDescription>
+              <CardDescription className="text-sm sm:text-base">
                 Tell us what you're looking for in a bank
               </CardDescription>
             </CardHeader>
-            <CardContent>
+            <CardContent className="p-4 sm:p-6 pt-0">
               <Form {...form}>
-                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 sm:space-y-5">
                   <FormField
                     control={form.control}
                     name="bankingNeed"
@@ -355,7 +355,7 @@ const BankRecommendation = () => {
                   
                   <Button 
                     type="submit" 
-                    className="w-full mt-4"
+                    className="w-full mt-4 sm:mt-6 h-11 sm:h-12 text-sm sm:text-base"
                     disabled={isSearching}
                   >
                     {isSearching ? "Searching..." : "Find Banks"}
@@ -367,20 +367,20 @@ const BankRecommendation = () => {
           </Card>
           
           <Card className="lg:col-span-2 border shadow-sm">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <CreditCard className="h-5 w-5 text-primary" />
+            <CardHeader className="p-4 sm:p-6">
+              <CardTitle className="flex items-center gap-2 text-lg sm:text-xl">
+                <CreditCard className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
                 Bank Recommendations
               </CardTitle>
-              <CardDescription>
+              <CardDescription className="text-sm sm:text-base">
                 Personalized options based on your preferences
               </CardDescription>
             </CardHeader>
-            <CardContent className="min-h-[400px]">
+            <CardContent className="min-h-[350px] sm:min-h-[400px] p-4 sm:p-6 pt-0">
               {isSearching ? (
-                <div className="flex flex-col items-center justify-center h-[400px] text-muted-foreground">
-                  <div className="animate-pulse-gentle mb-2">Searching for the best banks...</div>
-                  <div className="w-16 h-16 border-4 border-primary/30 border-t-primary rounded-full animate-spin"></div>
+                <div className="flex flex-col items-center justify-center h-[350px] sm:h-[400px] text-muted-foreground">
+                  <div className="animate-pulse-gentle mb-2 text-sm sm:text-base">Searching for the best banks...</div>
+                  <div className="w-12 h-12 sm:w-16 sm:h-16 border-4 border-primary/30 border-t-primary rounded-full animate-spin"></div>
                 </div>
               ) : allBanks.length > 0 ? (
                 <div className="space-y-6">

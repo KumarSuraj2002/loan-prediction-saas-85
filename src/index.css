@@ -115,6 +115,14 @@
     @apply my-6 sm:my-8 lg:my-12;
   }
   
+  .responsive-text-sm {
+    @apply text-xs sm:text-sm;
+  }
+  
+  .responsive-text-base {
+    @apply text-sm sm:text-base;
+  }
+  
   .responsive-text-lg {
     @apply text-base sm:text-lg;
   }
@@ -128,6 +136,41 @@
   }
   
   .responsive-text-3xl {
-    @apply text-2xl sm:text-3xl;
+    @apply text-2xl sm:text-3xl lg:text-4xl;
+  }
+  
+  .responsive-text-4xl {
+    @apply text-3xl sm:text-4xl lg:text-5xl;
+  }
+  
+  .responsive-text-5xl {
+    @apply text-4xl sm:text-5xl lg:text-6xl;
+  }
+  
+  /* Container utilities */
+  .responsive-container {
+    @apply w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
+  }
+  
+  /* Grid utilities */
+  .responsive-grid-2 {
+    @apply grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 lg:gap-8;
+  }
+  
+  .responsive-grid-3 {
+    @apply grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6;
+  }
+  
+  .responsive-grid-4 {
+    @apply grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6;
+  }
+  
+  /* Spacing utilities */
+  .responsive-section-padding {
+    @apply py-8 sm:py-12 lg:py-16;
+  }
+  
+  .responsive-section-padding-lg {
+    @apply py-12 sm:py-16 lg:py-24;
   }
 }

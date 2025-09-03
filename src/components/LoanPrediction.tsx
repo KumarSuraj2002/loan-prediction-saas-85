@@ -122,30 +122,30 @@ const LoanPrediction = () => {
   };
 
   return (
-    <section id="loan-prediction" className="py-16 px-4">
-      <div className="container">
-        <div className="flex flex-col items-center text-center mb-10">
-          <h2 className="text-3xl font-bold">Smart Loan Prediction</h2>
-          <p className="mt-2 text-lg text-muted-foreground max-w-[700px]">
+    <section id="loan-prediction" className="responsive-section-padding">
+      <div className="responsive-container">
+        <div className="flex flex-col items-center text-center mb-8 sm:mb-10">
+          <h2 className="responsive-text-3xl font-bold">Smart Loan Prediction</h2>
+          <p className="mt-2 sm:mt-3 responsive-text-xl text-muted-foreground max-w-[700px]">
             Enter your financial details below to get an instant prediction on your loan approval chances.
           </p>
         </div>
         
         <div className="grid lg:grid-cols-2 gap-6 lg:gap-8 max-w-5xl mx-auto">
           <Card className="border shadow-sm">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Calculator className="h-5 w-5 text-primary" />
+            <CardHeader className="p-4 sm:p-6">
+              <CardTitle className="flex items-center gap-2 text-lg sm:text-xl">
+                <Calculator className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
                 Your Financial Profile
               </CardTitle>
-              <CardDescription>
+              <CardDescription className="text-sm sm:text-base">
                 Fill in your details to predict loan approval likelihood
               </CardDescription>
             </CardHeader>
-            <CardContent>
+            <CardContent className="p-4 sm:p-6 pt-0">
               <Form {...form}>
-                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 sm:space-y-5">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                     <FormField
                       control={form.control}
                       name="income"
@@ -175,7 +175,7 @@ const LoanPrediction = () => {
                     />
                   </div>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                     <FormField
                       control={form.control}
                       name="loanAmount"
@@ -205,7 +205,7 @@ const LoanPrediction = () => {
                     />
                   </div>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                     <FormField
                       control={form.control}
                       name="employment"
@@ -274,7 +274,7 @@ const LoanPrediction = () => {
 
                   <Button 
                     type="submit" 
-                    className="w-full mt-4"
+                    className="w-full mt-4 sm:mt-6 h-11 sm:h-12 text-sm sm:text-base"
                     disabled={isCalculating}
                   >
                     {isCalculating ? "Calculating..." : "Calculate Loan Prediction"}
@@ -286,34 +286,34 @@ const LoanPrediction = () => {
           </Card>
 
           <Card className={`border shadow-sm ${result ? 'bg-card' : 'bg-muted/40'}`}>
-            <CardHeader>
-              <CardTitle>Loan Prediction Results</CardTitle>
-              <CardDescription>
+            <CardHeader className="p-4 sm:p-6">
+              <CardTitle className="text-lg sm:text-xl">Loan Prediction Results</CardTitle>
+              <CardDescription className="text-sm sm:text-base">
                 Our AI will analyze your data and predict loan approval
               </CardDescription>
             </CardHeader>
-            <CardContent className="min-h-[300px] flex items-center justify-center">
+            <CardContent className="min-h-[250px] sm:min-h-[300px] flex items-center justify-center p-4 sm:p-6 pt-0">
               {isCalculating ? (
                 <div className="text-center w-full">
-                  <div className="animate-pulse-gentle mb-4">Analyzing your financial profile...</div>
+                  <div className="animate-pulse-gentle mb-3 sm:mb-4 text-sm sm:text-base">Analyzing your financial profile...</div>
                   <Progress value={45} className="w-full max-w-xs mx-auto" />
                 </div>
               ) : result ? (
-                <div className="w-full space-y-6">
-                  <div className="flex flex-col items-center justify-center gap-3 p-4 rounded-lg bg-muted/50">
+                <div className="w-full space-y-4 sm:space-y-6">
+                  <div className="flex flex-col items-center justify-center gap-3 p-3 sm:p-4 rounded-lg bg-muted/50">
                     {result.approved ? (
-                      <div className="rounded-full bg-green-100 p-3">
-                        <ThumbsUp className="h-8 w-8 text-green-600" />
+                      <div className="rounded-full bg-green-100 p-2 sm:p-3">
+                        <ThumbsUp className="h-6 w-6 sm:h-8 sm:w-8 text-green-600" />
                       </div>
                     ) : (
-                      <div className="rounded-full bg-amber-100 p-3">
-                        <ThumbsDown className="h-8 w-8 text-amber-600" />
+                      <div className="rounded-full bg-amber-100 p-2 sm:p-3">
+                        <ThumbsDown className="h-6 w-6 sm:h-8 sm:w-8 text-amber-600" />
                       </div>
                     )}
-                    <h3 className="text-xl font-medium text-center">
+                    <h3 className="text-lg sm:text-xl font-medium text-center">
                       {result.approved ? "Likely to be Approved" : "May Face Approval Challenges"}
                     </h3>
-                    <p className="text-sm text-center text-muted-foreground">
+                    <p className="text-xs sm:text-sm text-center text-muted-foreground">
                       {result.reason}
                     </p>
                   </div>
@@ -336,35 +336,35 @@ const LoanPrediction = () => {
                     </div>
 
                     {result.approved && (
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 mt-4">
                         <div className="p-3 border rounded-md bg-card">
-                          <p className="text-sm text-muted-foreground">Est. Interest Rate</p>
-                          <p className="text-lg font-semibold">{result.interestRate}%</p>
+                          <p className="text-xs sm:text-sm text-muted-foreground">Est. Interest Rate</p>
+                          <p className="text-base sm:text-lg font-semibold">{result.interestRate}%</p>
                         </div>
                         <div className="p-3 border rounded-md bg-card">
-                          <p className="text-sm text-muted-foreground">Monthly Payment</p>
-                          <p className="text-lg font-semibold">${result.monthlyPayment}</p>
+                          <p className="text-xs sm:text-sm text-muted-foreground">Monthly Payment</p>
+                          <p className="text-base sm:text-lg font-semibold">${result.monthlyPayment}</p>
                         </div>
                       </div>
                     )}
                   </div>
 
                   {result.recommendation && (
-                    <div className="rounded-md bg-primary/10 p-4 text-sm">
+                    <div className="rounded-md bg-primary/10 p-3 sm:p-4 text-xs sm:text-sm">
                       <strong>Recommendation:</strong> {result.recommendation}
                     </div>
                   )}
                 </div>
               ) : (
                 <div className="text-center text-muted-foreground">
-                  <div className="mb-3 border border-dashed rounded-full p-4 inline-flex">
-                    <Calculator className="h-6 w-6" />
+                  <div className="mb-3 border border-dashed rounded-full p-3 sm:p-4 inline-flex">
+                    <Calculator className="h-5 w-5 sm:h-6 sm:w-6" />
                   </div>
-                  <p>Fill out the form to get your loan prediction</p>
+                  <p className="text-sm sm:text-base">Fill out the form to get your loan prediction</p>
                 </div>
               )}
             </CardContent>
-            <CardFooter className="text-xs text-muted-foreground">
+            <CardFooter className="text-xs text-muted-foreground p-4 sm:p-6 pt-0">
               Note: This is a prediction based on the information provided and not a guarantee of loan approval.
             </CardFooter>
           </Card>

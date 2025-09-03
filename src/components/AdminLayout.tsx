@@ -1,11 +1,12 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, Outlet } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { LogOut } from 'lucide-react';
+import { LogOut, Menu } from 'lucide-react';
 import AdminSidebar from './AdminSidebar';
 import { supabase } from "@/integrations/supabase/client";
 import { User, Session } from '@supabase/supabase-js';
 import { useToast } from "@/hooks/use-toast";
+import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 
 const AdminLayout = () => {
   const navigate = useNavigate();
@@ -110,31 +111,31 @@ const AdminLayout = () => {
   }
 
   return (
-    <div className="h-screen flex bg-background overflow-hidden">
-      {/* Fixed Sidebar */}
-      <div className="fixed left-0 top-0 h-full z-10">
+    <SidebarProvider>
+      <div className="min-h-screen flex w-full">
         <AdminSidebar />
-      </div>
-      
-      {/* Main Content Area with proper left margin for sidebar */}
-      <div className="flex-1 flex flex-col ml-64">
-        {/* Top Header - Fixed */}
-        <header className="h-16 bg-card border-b border-border flex items-center justify-between px-6 flex-shrink-0">
-          <div>
-            <h1 className="text-xl font-semibold text-foreground">FINANCE BUDDY</h1>
-          </div>
-          <Button onClick={handleLogout} variant="outline" size="sm">
-            <LogOut className="h-4 w-4 mr-2" />
-            LOG OUT
-          </Button>
-        </header>
+        
+        <div className="flex-1 flex flex-col">
+          {/* Top Header */}
+          <header className="h-14 sm:h-16 bg-card border-b border-border flex items-center justify-between px-4 sm:px-6 flex-shrink-0">
+            <div className="flex items-center gap-3">
+              <SidebarTrigger className="lg:hidden" />
+              <h1 className="text-lg sm:text-xl font-semibold text-foreground">FINANCE BUDDY</h1>
+            </div>
+            <Button onClick={handleLogout} variant="outline" size="sm" className="text-xs sm:text-sm">
+              <LogOut className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
+              <span className="hidden sm:inline">LOG OUT</span>
+              <span className="sm:hidden">OUT</span>
+            </Button>
+          </header>
 
-        {/* Main Content - Scrollable */}
-        <main className="flex-1 p-6 overflow-y-auto">
-          <Outlet />
-        </main>
+          {/* Main Content - Scrollable */}
+          <main className="flex-1 p-4 sm:p-6 overflow-y-auto">
+            <Outlet />
+          </main>
+        </div>
       </div>
-    </div>
+    </SidebarProvider>
   );
 };
 

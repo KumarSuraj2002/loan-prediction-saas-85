@@ -116,31 +116,31 @@ const Testimonials = () => {
   }
 
   return (
-    <section className="py-16 bg-background overflow-hidden">
-      <div className="container px-4 md:px-6">
-        <div className="flex flex-col items-center justify-center text-center mb-12">
-          <h2 className="text-3xl font-bold tracking-tight">What Our Users Say</h2>
-          <p className="mt-4 text-xl text-muted-foreground max-w-[800px]">
+    <section className="responsive-section-padding bg-background overflow-hidden">
+      <div className="responsive-container">
+        <div className="flex flex-col items-center justify-center text-center mb-8 sm:mb-12">
+          <h2 className="responsive-text-3xl font-bold tracking-tight">What Our Users Say</h2>
+          <p className="mt-3 sm:mt-4 responsive-text-xl text-muted-foreground max-w-[800px]">
             Discover how our platform has helped people make smarter financial decisions.
           </p>
         </div>
         
         <div ref={carouselRef} className="w-full overflow-hidden">
           <Carousel className="w-full" opts={{ loop: true, align: "start", dragFree: true }}>
-            <CarouselContent className="py-4">
+            <CarouselContent className="py-2 sm:py-4">
               {/* Duplicate testimonials at the beginning to create seamless loop */}
               {testimonials.map((testimonial) => (
-                <CarouselItem key={`start-${testimonial.id}`} className="md:basis-1/2 lg:basis-1/3 pl-4">
+                <CarouselItem key={`start-${testimonial.id}`} className="basis-full sm:basis-1/2 lg:basis-1/3 pl-3 sm:pl-4">
                   <Card className="border bg-card h-full">
-                    <CardContent className="p-6 flex flex-col h-full">
-                      <div className="flex items-start mb-4">
-                        <Avatar className="h-10 w-10 mr-4">
+                    <CardContent className="p-4 sm:p-6 flex flex-col h-full">
+                      <div className="flex items-start mb-3 sm:mb-4">
+                        <Avatar className="h-8 w-8 sm:h-10 sm:w-10 mr-3 sm:mr-4 flex-shrink-0">
                           <AvatarImage src={testimonial.avatar} alt={testimonial.name} />
-                          <AvatarFallback>{testimonial.name.slice(0, 2)}</AvatarFallback>
+                          <AvatarFallback className="text-xs sm:text-sm">{testimonial.name.slice(0, 2)}</AvatarFallback>
                         </Avatar>
-                        <div>
-                          <p className="font-medium">{testimonial.name}</p>
-                          <p className="text-sm text-muted-foreground">
+                        <div className="min-w-0 flex-1">
+                          <p className="font-medium text-sm sm:text-base truncate">{testimonial.name}</p>
+                          <p className="text-xs sm:text-sm text-muted-foreground truncate">
                             {testimonial.role}
                             {testimonial.company && ` at ${testimonial.company}`}
                           </p>
@@ -154,7 +154,7 @@ const Testimonials = () => {
                           </div>
                         </div>
                       </div>
-                      <blockquote className="text-muted-foreground flex-1 italic">
+                      <blockquote className="text-muted-foreground flex-1 italic text-sm sm:text-base leading-relaxed">
                         "{testimonial.content}"
                       </blockquote>
                     </CardContent>
@@ -164,23 +164,23 @@ const Testimonials = () => {
               
               {/* Original testimonials */}
               {testimonials.map((testimonial) => (
-                <CarouselItem key={testimonial.id} className="md:basis-1/2 lg:basis-1/3 pl-4">
+                <CarouselItem key={testimonial.id} className="basis-full sm:basis-1/2 lg:basis-1/3 pl-3 sm:pl-4">
                   <Card className="border bg-card h-full">
-                    <CardContent className="p-6 flex flex-col h-full">
-                      <div className="flex items-start mb-4">
-                        <Avatar className="h-10 w-10 mr-4">
+                    <CardContent className="p-4 sm:p-6 flex flex-col h-full">
+                      <div className="flex items-start mb-3 sm:mb-4">
+                        <Avatar className="h-8 w-8 sm:h-10 sm:w-10 mr-3 sm:mr-4 flex-shrink-0">
                           <AvatarImage src={testimonial.avatar} alt={testimonial.name} />
-                          <AvatarFallback>{testimonial.name.slice(0, 2)}</AvatarFallback>
+                          <AvatarFallback className="text-xs sm:text-sm">{testimonial.name.slice(0, 2)}</AvatarFallback>
                         </Avatar>
-                        <div>
-                          <p className="font-medium">{testimonial.name}</p>
-                          <p className="text-sm text-muted-foreground">
+                        <div className="min-w-0 flex-1">
+                          <p className="font-medium text-sm sm:text-base truncate">{testimonial.name}</p>
+                          <p className="text-xs sm:text-sm text-muted-foreground truncate">
                             {testimonial.role}
                             {testimonial.company && ` at ${testimonial.company}`}
                           </p>
                         </div>
                       </div>
-                      <blockquote className="text-muted-foreground flex-1 italic">
+                      <blockquote className="text-muted-foreground flex-1 italic text-sm sm:text-base leading-relaxed">
                         "{testimonial.content}"
                       </blockquote>
                     </CardContent>
@@ -190,23 +190,23 @@ const Testimonials = () => {
               
               {/* Duplicate testimonials at the end to create seamless loop */}
               {testimonials.map((testimonial) => (
-                <CarouselItem key={`end-${testimonial.id}`} className="md:basis-1/2 lg:basis-1/3 pl-4">
+                <CarouselItem key={`end-${testimonial.id}`} className="basis-full sm:basis-1/2 lg:basis-1/3 pl-3 sm:pl-4">
                   <Card className="border bg-card h-full">
-                    <CardContent className="p-6 flex flex-col h-full">
-                      <div className="flex items-start mb-4">
-                        <Avatar className="h-10 w-10 mr-4">
+                    <CardContent className="p-4 sm:p-6 flex flex-col h-full">
+                      <div className="flex items-start mb-3 sm:mb-4">
+                        <Avatar className="h-8 w-8 sm:h-10 sm:w-10 mr-3 sm:mr-4 flex-shrink-0">
                           <AvatarImage src={testimonial.avatar} alt={testimonial.name} />
-                          <AvatarFallback>{testimonial.name.slice(0, 2)}</AvatarFallback>
+                          <AvatarFallback className="text-xs sm:text-sm">{testimonial.name.slice(0, 2)}</AvatarFallback>
                         </Avatar>
-                        <div>
-                          <p className="font-medium">{testimonial.name}</p>
-                          <p className="text-sm text-muted-foreground">
+                        <div className="min-w-0 flex-1">
+                          <p className="font-medium text-sm sm:text-base truncate">{testimonial.name}</p>
+                          <p className="text-xs sm:text-sm text-muted-foreground truncate">
                             {testimonial.role}
                             {testimonial.company && ` at ${testimonial.company}`}
                           </p>
                         </div>
                       </div>
-                      <blockquote className="text-muted-foreground flex-1 italic">
+                      <blockquote className="text-muted-foreground flex-1 italic text-sm sm:text-base leading-relaxed">
                         "{testimonial.content}"
                       </blockquote>
                     </CardContent>
