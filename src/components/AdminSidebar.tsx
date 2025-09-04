@@ -9,7 +9,11 @@ import {
   CreditCard, 
   Settings,
   ChevronDown,
-  ChevronRight
+  ChevronRight,
+  BookOpen,
+  Briefcase,
+  Newspaper,
+  PenTool
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import {
@@ -27,6 +31,7 @@ import {
 const AdminSidebar = () => {
   const location = useLocation();
   const [isLoanApplicationsExpanded, setIsLoanApplicationsExpanded] = useState(true);
+  const [isContentExpanded, setIsContentExpanded] = useState(true);
 
   const mainNavItems = [
     {
@@ -41,6 +46,13 @@ const AdminSidebar = () => {
     { title: 'Approved Applications', href: '/admin/loan-applications/approved' },
     { title: 'Rejected Applications', href: '/admin/loan-applications/rejected' },
     { title: 'Application Records', href: '/admin/loan-applications/records' },
+  ];
+
+  const contentManagementSubItems = [
+    { title: 'Blog Posts', href: '/admin/blog', icon: PenTool },
+    { title: 'Financial Guides', href: '/admin/financial-guides', icon: BookOpen },
+    { title: 'Careers', href: '/admin/careers', icon: Briefcase },
+    { title: 'Press Releases', href: '/admin/press', icon: Newspaper },
   ];
 
   const otherNavItems = [
@@ -144,6 +156,51 @@ const AdminSidebar = () => {
                             : "text-sidebar-foreground/80 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
                         )}
                       >
+                        {item.title}
+                      </NavLink>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                ))}
+              </SidebarMenu>
+            </SidebarGroupContent>
+          )}
+        </SidebarGroup>
+
+        {/* Content Management Expandable Section */}
+        <SidebarGroup>
+          <SidebarGroupLabel>
+            <button
+              onClick={() => setIsContentExpanded(!isContentExpanded)}
+              className="w-full flex items-center justify-between px-3 py-2 text-sm font-medium text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground transition-colors rounded-lg"
+            >
+              <div className="flex items-center">
+                <PenTool className="h-4 w-4 sm:h-5 sm:w-5 mr-2 sm:mr-3" />
+                <span className="text-sm sm:text-base">Content Management</span>
+              </div>
+              {isContentExpanded ? (
+                <ChevronDown className="h-3 w-3 sm:h-4 sm:w-4" />
+              ) : (
+                <ChevronRight className="h-3 w-3 sm:h-4 sm:w-4" />
+              )}
+            </button>
+          </SidebarGroupLabel>
+
+          {isContentExpanded && (
+            <SidebarGroupContent>
+              <SidebarMenu>
+                {contentManagementSubItems.map((item) => (
+                  <SidebarMenuItem key={item.href}>
+                    <SidebarMenuButton asChild>
+                      <NavLink
+                        to={item.href}
+                        className={cn(
+                          "flex items-center px-3 py-2 ml-4 sm:ml-6 rounded-lg text-xs sm:text-sm transition-colors",
+                          isActive(item.href)
+                            ? "bg-primary/10 text-primary font-medium"
+                            : "text-sidebar-foreground/80 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+                        )}
+                      >
+                        <item.icon className="h-3 w-3 sm:h-4 sm:w-4 mr-2" />
                         {item.title}
                       </NavLink>
                     </SidebarMenuButton>

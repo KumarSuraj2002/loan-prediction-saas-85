@@ -56,6 +56,171 @@ export type Database = {
         }
         Relationships: []
       }
+      blog_posts: {
+        Row: {
+          author: string
+          content: string
+          created_at: string
+          excerpt: string | null
+          featured_image: string | null
+          id: string
+          is_published: boolean
+          meta_description: string | null
+          meta_title: string | null
+          publish_date: string | null
+          slug: string
+          tags: string[] | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          author: string
+          content: string
+          created_at?: string
+          excerpt?: string | null
+          featured_image?: string | null
+          id?: string
+          is_published?: boolean
+          meta_description?: string | null
+          meta_title?: string | null
+          publish_date?: string | null
+          slug: string
+          tags?: string[] | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          author?: string
+          content?: string
+          created_at?: string
+          excerpt?: string | null
+          featured_image?: string | null
+          id?: string
+          is_published?: boolean
+          meta_description?: string | null
+          meta_title?: string | null
+          publish_date?: string | null
+          slug?: string
+          tags?: string[] | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      careers: {
+        Row: {
+          application_deadline: string | null
+          benefits: string[] | null
+          created_at: string
+          department: string
+          description: string
+          employment_type: string
+          experience_level: string
+          id: string
+          is_active: boolean
+          location: string
+          requirements: string[] | null
+          responsibilities: string[] | null
+          salary_range: string | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          application_deadline?: string | null
+          benefits?: string[] | null
+          created_at?: string
+          department: string
+          description: string
+          employment_type?: string
+          experience_level?: string
+          id?: string
+          is_active?: boolean
+          location: string
+          requirements?: string[] | null
+          responsibilities?: string[] | null
+          salary_range?: string | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          application_deadline?: string | null
+          benefits?: string[] | null
+          created_at?: string
+          department?: string
+          description?: string
+          employment_type?: string
+          experience_level?: string
+          id?: string
+          is_active?: boolean
+          location?: string
+          requirements?: string[] | null
+          responsibilities?: string[] | null
+          salary_range?: string | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      financial_guides: {
+        Row: {
+          author: string
+          category: string
+          content: string
+          created_at: string
+          difficulty_level: string
+          estimated_read_time: number | null
+          excerpt: string | null
+          featured_image: string | null
+          id: string
+          is_published: boolean
+          meta_description: string | null
+          meta_title: string | null
+          publish_date: string | null
+          slug: string
+          tags: string[] | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          author: string
+          category?: string
+          content: string
+          created_at?: string
+          difficulty_level?: string
+          estimated_read_time?: number | null
+          excerpt?: string | null
+          featured_image?: string | null
+          id?: string
+          is_published?: boolean
+          meta_description?: string | null
+          meta_title?: string | null
+          publish_date?: string | null
+          slug: string
+          tags?: string[] | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          author?: string
+          category?: string
+          content?: string
+          created_at?: string
+          difficulty_level?: string
+          estimated_read_time?: number | null
+          excerpt?: string | null
+          featured_image?: string | null
+          id?: string
+          is_published?: boolean
+          meta_description?: string | null
+          meta_title?: string | null
+          publish_date?: string | null
+          slug?: string
+          tags?: string[] | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       loan_applications: {
         Row: {
           applicant_name: string
@@ -154,6 +319,63 @@ export type Database = {
           min_amount?: number
           min_term_months?: number
           name?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      press_releases: {
+        Row: {
+          content: string
+          created_at: string
+          excerpt: string | null
+          featured_image: string | null
+          id: string
+          is_published: boolean
+          location: string | null
+          meta_description: string | null
+          meta_title: string | null
+          press_contact_email: string | null
+          press_contact_name: string | null
+          press_contact_phone: string | null
+          publish_date: string | null
+          slug: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          excerpt?: string | null
+          featured_image?: string | null
+          id?: string
+          is_published?: boolean
+          location?: string | null
+          meta_description?: string | null
+          meta_title?: string | null
+          press_contact_email?: string | null
+          press_contact_name?: string | null
+          press_contact_phone?: string | null
+          publish_date?: string | null
+          slug: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          excerpt?: string | null
+          featured_image?: string | null
+          id?: string
+          is_published?: boolean
+          location?: string | null
+          meta_description?: string | null
+          meta_title?: string | null
+          press_contact_email?: string | null
+          press_contact_name?: string | null
+          press_contact_phone?: string | null
+          publish_date?: string | null
+          slug?: string
+          title?: string
           updated_at?: string
         }
         Relationships: []

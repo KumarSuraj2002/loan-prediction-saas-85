@@ -30,6 +30,10 @@ import AdminUserQueries from "./pages/AdminUserQueries";
 import AdminRatingsReviews from "./pages/AdminRatingsReviews";
 import AdminLoanProducts from "./pages/AdminLoanProducts";
 import AdminBankPartners from "./pages/AdminBankPartners";
+import AdminBlog from "./pages/AdminBlog";
+import AdminFinancialGuides from "./pages/AdminFinancialGuides";
+import AdminCareers from "./pages/AdminCareers";
+import AdminPress from "./pages/AdminPress";
 import AdminLayout from "./components/AdminLayout";
 import MaintenanceWrapper from "./components/MaintenanceWrapper";
 
@@ -58,6 +62,10 @@ const App = () => (
             <Route path="ratings-reviews" element={<AdminRatingsReviews />} />
             <Route path="loan-products" element={<AdminLoanProducts />} />
             <Route path="bank-partners" element={<AdminBankPartners />} />
+            <Route path="blog" element={<AdminBlog />} />
+            <Route path="financial-guides" element={<AdminFinancialGuides />} />
+            <Route path="careers" element={<AdminCareers />} />
+            <Route path="press" element={<AdminPress />} />
           </Route>
           
           {/* Public routes - wrapped with maintenance mode */}
