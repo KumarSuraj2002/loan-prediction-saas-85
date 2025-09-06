@@ -1,27 +1,88 @@
-
 import { useParams, Link } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import { guides } from '../data/guidesData';
+import { supabase } from '@/integrations/supabase/client';
 import { Separator } from '@/components/ui/separator';
+import { useState, useEffect } from 'react';
+
+interface FinancialGuide {
+  id: string;
+  title: string;
+  slug: string;
+  excerpt: string;
+  content: string;
+  author: string;
+  featured_image: string;
+  tags: string[];
+  category: string;
+  difficulty_level: string;
+  estimated_read_time: number;
+  is_published: boolean;
+  publish_date: string;
+  created_at: string;
+  updated_at: string;
+}
 
 const GuidePost = () => {
   const { guideId } = useParams();
-  const guide = guides.find(guide => guide.id === Number(guideId));
+  const [guide, setGuide] = useState<FinancialGuide | null>(null);
+  const [loading, setLoading] = useState(true);
 
-  if (!guide || !guide.content) {
+  useEffect(() => {
+    if (guideId) {
+      fetchGuide(guideId);
+    }
+  }, [guideId]);
+
+  const fetchGuide = async (slug: string) => {
+    try {
+      const { data, error } = await supabase
+        .from('financial_guides')
+        .select('*')
+        .eq('slug', slug)
+        .eq('is_published', true)
+        .single();
+
+      if (error) throw error;
+      setGuide(data);
+    } catch (error) {
+      console.error('Error fetching guide:', error);
+      setGuide(null);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (loading) {
     return (
       <div className="min-h-screen flex flex-col">
         <Navbar />
-        <main className="flex-1 container mx-auto px-4 py-12">
+        <main className="flex-1 flex items-center justify-center">
+          <p className="text-muted-foreground">Loading guide...</p>
+        </main>
+        <Footer />
+      </div>
+    );
+  }
+
+  if (!guide) {
+    return (
+      <div className="min-h-screen flex flex-col">
+        <Navbar />
+        <main className="flex-1 flex items-center justify-center">
           <div className="text-center">
             <h1 className="text-3xl font-bold mb-4">Guide Not Found</h1>
-            <p className="mb-6">The financial guide you're looking for does not exist or has no content yet.</p>
-            <Button asChild className="bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary shadow-md hover:shadow-lg transition-all">
-              <Link to="/guides">Back to Guides</Link>
+            <p className="text-muted-foreground mb-8">
+              The guide you're looking for doesn't exist or has been removed.
+            </p>
+            <Button asChild>
+              <Link to="/guides" className="flex items-center gap-1">
+                <ChevronLeft className="h-4 w-4" />
+                Back to Guides
+              </Link>
             </Button>
           </div>
         </main>
@@ -34,83 +95,54 @@ const GuidePost = () => {
     <div className="min-h-screen flex flex-col">
       <Navbar />
       <main className="flex-1">
-        {/* Hero Section with Guide Title */}
-        <div className={`w-full py-16 ${guide.color.replace('bg-', 'bg-')}`}>
-          <div className="container px-4 md:px-6 mx-auto">
-            <Badge variant="outline" className="bg-primary/10 text-primary mb-4">{guide.category}</Badge>
-            <div className="flex items-center gap-3 mb-4">
-              <div className={`h-12 w-12 rounded-full bg-white flex items-center justify-center text-2xl`}>
-                {guide.icon}
-              </div>
-              <Badge variant={guide.level === "Beginner" ? "outline" : guide.level === "Intermediate" ? "secondary" : "default"}>
-                {guide.level}
-              </Badge>
-              <span className="text-sm text-muted-foreground">⏱️ {guide.estimatedTime}</span>
-            </div>
-            <h1 className="text-3xl md:text-5xl font-bold mb-4">{guide.title}</h1>
-            <p className="text-xl text-muted-foreground max-w-3xl">{guide.description}</p>
-          </div>
-        </div>
-
-        {/* Guide Content */}
-        <div className="container px-4 md:px-6 mx-auto py-12">
-          <Link to="/guides" className="inline-flex items-center text-primary hover:text-primary/80 mb-8 group transition-colors">
-            <Button variant="ghost" size="sm" className="group-hover:translate-x-[-2px] transition-transform">
-              <ChevronLeft className="h-4 w-4 mr-1" /> Back to all guides
+        <div className="container px-4 md:px-6 mx-auto py-8">
+          <div className="mb-8">
+            <Button variant="ghost" asChild className="hover:bg-muted/50">
+              <Link to="/guides" className="flex items-center gap-1">
+                <ChevronLeft className="h-4 w-4" />
+                Back to Guides
+              </Link>
             </Button>
-          </Link>
+          </div>
 
-          <div className="prose prose-lg max-w-4xl mx-auto">
-            <p className="lead">{guide.content.intro}</p>
-            
-            {guide.content.sections.map((section, index) => (
-              <div key={index} className="my-8">
-                <h2>{section.title}</h2>
-                <p>{section.content}</p>
+          <div className="max-w-4xl mx-auto">
+            <div className="text-center mb-8">
+              <h1 className="text-4xl md:text-5xl font-bold mb-4">{guide.title}</h1>
+              <p className="text-xl text-muted-foreground mb-6 max-w-3xl mx-auto">
+                {guide.excerpt}
+              </p>
+              
+              <div className="flex flex-wrap justify-center items-center gap-6 text-sm text-muted-foreground">
+                <span>By {guide.author}</span>
+                <span>•</span>
+                <span>⏱️ {guide.estimated_read_time} min read</span>
+                <span>•</span>
+                <Badge variant="outline">{guide.difficulty_level}</Badge>
               </div>
-            ))}
+            </div>
 
-            <h2>{guide.content.conclusion.title}</h2>
-            <p>{guide.content.conclusion.content}</p>
+            <Separator className="mb-8" />
 
-            {guide.content.tips && (
-              <div className="my-8 p-6 bg-muted/30 rounded-lg">
-                <h3 className="text-xl font-bold mb-4">Quick Tips</h3>
-                <ul>
-                  {guide.content.tips.map((tip, index) => (
-                    <li key={index} className="mb-2">{tip}</li>
-                  ))}
-                </ul>
-              </div>
-            )}
+            <div className="prose prose-lg max-w-none">
+              <div 
+                className="text-muted-foreground leading-relaxed"
+                dangerouslySetInnerHTML={{ __html: guide.content.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>') }}
+              />
+            </div>
 
-            {guide.content.resources && (
-              <div className="my-8">
-                <h3 className="text-xl font-bold mb-4">Additional Resources</h3>
-                <Separator className="mb-4" />
-                <ul className="space-y-2">
-                  {guide.content.resources.map((resource, index) => (
-                    <li key={index} className="mb-2">
-                      <a 
-                        href={resource.url} 
-                        target="_blank" 
-                        rel="noopener noreferrer"
-                        className="text-primary hover:text-primary/80 underline-offset-4 hover:underline inline-flex items-center gap-1 transition-colors"
-                      >
-                        {resource.title}
-                        <ChevronRight className="h-3.5 w-3.5" />
-                      </a>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
-
-            <div className="flex justify-between items-center mt-12 pt-6 border-t">
-              <Badge variant="outline">{guide.category}</Badge>
-              <Badge variant={guide.level === "Beginner" ? "outline" : guide.level === "Intermediate" ? "secondary" : "default"}>
-                {guide.level} • {guide.estimatedTime}
-              </Badge>
+            <div className="mt-12 pt-8 border-t flex justify-between items-center">
+              <Button variant="outline" asChild>
+                <Link to="/guides" className="flex items-center gap-1">
+                  <ChevronLeft className="h-4 w-4" />
+                  All Guides
+                </Link>
+              </Button>
+              <Button asChild>
+                <Link to="/contact" className="flex items-center gap-1">
+                  Get Help
+                  <ChevronRight className="h-4 w-4" />
+                </Link>
+              </Button>
             </div>
           </div>
         </div>

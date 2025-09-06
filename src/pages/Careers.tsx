@@ -1,114 +1,67 @@
-
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Users } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Users, MapPin, Briefcase, DollarSign } from "lucide-react";
+import { useState, useEffect } from 'react';
+import { supabase } from '@/integrations/supabase/client';
 
-interface JobListing {
+interface Career {
   id: string;
   title: string;
+  description: string;
   department: string;
   location: string;
-  type: string;
-  description: string;
+  employment_type: string;
+  experience_level: string;
+  salary_range: string;
   requirements: string[];
   responsibilities: string[];
+  benefits: string[];
+  is_active: boolean;
+  application_deadline: string;
+  created_at: string;
+  updated_at: string;
 }
 
-const jobListings: JobListing[] = [
-  {
-    id: "jr-data-scientist",
-    title: "Junior Data Scientist",
-    department: "Data Science",
-    location: "Remote",
-    type: "Full-time",
-    description: "Join our data science team to help build and improve our loan prediction algorithms and financial recommendation systems.",
-    requirements: [
-      "Bachelor's degree in Computer Science, Statistics, or related field",
-      "1-3 years of experience with machine learning and data analysis",
-      "Proficiency in Python and data science libraries like Pandas, NumPy, and Scikit-learn",
-      "Understanding of financial concepts is a plus",
-      "Strong problem-solving skills and attention to detail"
-    ],
-    responsibilities: [
-      "Develop and maintain prediction models for loan approvals",
-      "Analyze financial data to identify patterns and insights",
-      "Collaborate with product and engineering teams to implement data-driven features",
-      "Monitor and improve model performance over time",
-      "Stay updated on latest AI and machine learning advancements"
-    ]
-  },
-  {
-    id: "sr-frontend-dev",
-    title: "Senior Frontend Developer",
-    department: "Engineering",
-    location: "Hybrid (San Francisco)",
-    type: "Full-time",
-    description: "We're looking for an experienced frontend developer to lead the development of our user interfaces and create intuitive financial tools.",
-    requirements: [
-      "5+ years of experience with React and modern JavaScript",
-      "Strong understanding of TypeScript, responsive design, and accessibility",
-      "Experience with state management libraries and frontend testing",
-      "Knowledge of UI/UX design principles",
-      "Ability to mentor junior developers"
-    ],
-    responsibilities: [
-      "Build responsive, intuitive interfaces for our financial tools",
-      "Collaborate with designers to implement and refine user experiences",
-      "Optimize application performance and ensure cross-browser compatibility",
-      "Implement and maintain coding standards and best practices",
-      "Mentor junior developers and conduct code reviews"
-    ]
-  },
-  {
-    id: "financial-analyst",
-    title: "Financial Analyst",
-    department: "Finance",
-    location: "New York",
-    type: "Full-time",
-    description: "Help develop the financial logic behind our recommendation systems and ensure our advice is accurate and beneficial to users.",
-    requirements: [
-      "Bachelor's degree in Finance, Economics, or related field",
-      "3+ years of experience in financial analysis or banking",
-      "Strong understanding of lending practices and loan assessment",
-      "Experience with financial modeling and data analysis",
-      "Excellent communication skills"
-    ],
-    responsibilities: [
-      "Develop rules and criteria for our bank recommendation algorithm",
-      "Research financial products across different banks and lenders",
-      "Create content explaining financial concepts to users",
-      "Verify the accuracy of our financial advice tools",
-      "Stay updated on changes in lending practices and regulations"
-    ]
-  },
-  {
-    id: "marketing-manager",
-    title: "Marketing Manager",
-    department: "Marketing",
-    location: "Remote",
-    type: "Full-time",
-    description: "Lead our marketing efforts to help more people discover our financial tools and understand how they can benefit from our services.",
-    requirements: [
-      "5+ years of experience in digital marketing, preferably in fintech",
-      "Experience with content marketing, SEO, and social media campaigns",
-      "Strong analytical skills and experience with marketing metrics",
-      "Excellent writing and communication skills",
-      "Understanding of financial services and consumer needs"
-    ],
-    responsibilities: [
-      "Develop and execute marketing strategies to grow our user base",
-      "Create compelling content about financial decision-making",
-      "Manage digital marketing campaigns across multiple channels",
-      "Analyze marketing performance and optimize for conversion",
-      "Collaborate with product team to gather user insights"
-    ]
-  }
-];
-
 const Careers = () => {
+  const [careers, setCareers] = useState<Career[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchCareers();
+  }, []);
+
+  const fetchCareers = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('careers')
+        .select('*')
+        .eq('is_active', true)
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      if (data) {
+        setCareers(data);
+      }
+    } catch (error) {
+      console.error('Error fetching careers:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const getVariantForLevel = (level: string) => {
+    switch (level.toLowerCase()) {
+      case 'entry-level': return 'outline';
+      case 'mid-level': return 'secondary';
+      case 'senior': return 'default';
+      default: return 'outline';
+    }
+  };
+
   return (
     <div className="min-h-screen flex flex-col">
       <Navbar />
@@ -149,114 +102,186 @@ const Careers = () => {
                       <rect width="7" height="9" x="3" y="3" rx="1" /><rect width="7" height="5" x="14" y="3" rx="1" /><rect width="7" height="9" x="14" y="12" rx="1" /><rect width="7" height="5" x="3" y="16" rx="1" />
                     </svg>
                   </div>
-                  <h3 className="text-xl font-bold mb-2">Cutting-Edge Tech</h3>
-                  <p className="text-muted-foreground">Work with the latest technologies in AI, machine learning, and financial modeling.</p>
+                  <h3 className="text-xl font-bold mb-2">Cutting-Edge Technology</h3>
+                  <p className="text-muted-foreground">Work with the latest AI and machine learning technologies to solve real-world financial challenges.</p>
                 </CardContent>
               </Card>
               <Card>
                 <CardContent className="p-6">
                   <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center mb-4">
                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-primary">
-                      <path d="M2 3h20" /><path d="M21 3v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V3" /><path d="m7 21 5-5 5 5" />
+                      <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="m22 21-3-3m0 0a3 3 0 1 0-6 0 3 3 0 0 0 6 0z" />
                     </svg>
                   </div>
-                  <h3 className="text-xl font-bold mb-2">Growth Opportunities</h3>
-                  <p className="text-muted-foreground">Fast-paced environment where your skills and career can grow rapidly as we expand.</p>
+                  <h3 className="text-xl font-bold mb-2">Growth & Learning</h3>
+                  <p className="text-muted-foreground">Continuous learning opportunities, mentorship programs, and career advancement paths to help you grow.</p>
                 </CardContent>
               </Card>
             </div>
           </div>
         </section>
 
-        {/* Benefits */}
-        <section className="py-16 bg-muted/50">
+        {/* Open Positions */}
+        <section className="py-16 bg-muted/30">
           <div className="container px-4 md:px-6 mx-auto">
-            <h2 className="text-3xl font-bold mb-8 text-center">Our Benefits</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 text-center">
-              <div className="p-4">
-                <div className="h-12 w-12 mx-auto rounded-full bg-primary/10 flex items-center justify-center mb-4">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-primary">
-                    <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z" />
-                  </svg>
-                </div>
-                <h3 className="text-lg font-semibold mb-2">Comprehensive Healthcare</h3>
-                <p className="text-muted-foreground">Medical, dental, and vision coverage for you and your dependents.</p>
+            <h2 className="text-3xl font-bold mb-8 text-center">Open Positions</h2>
+            
+            {loading ? (
+              <div className="text-center py-12">
+                <p className="text-muted-foreground">Loading positions...</p>
               </div>
-              <div className="p-4">
-                <div className="h-12 w-12 mx-auto rounded-full bg-primary/10 flex items-center justify-center mb-4">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-primary">
-                    <path d="M8 2v4" /><path d="M16 2v4" /><rect width="18" height="18" x="3" y="4" rx="2" /><path d="M3 10h18" />
-                  </svg>
-                </div>
-                <h3 className="text-lg font-semibold mb-2">Flexible Time Off</h3>
-                <p className="text-muted-foreground">Take time when you need it with our open PTO policy.</p>
+            ) : careers.length > 0 ? (
+              <div className="max-w-4xl mx-auto">
+                <Accordion type="single" collapsible className="space-y-4">
+                  {careers.map((job) => (
+                    <AccordionItem key={job.id} value={job.id} className="bg-background rounded-lg border px-6">
+                      <AccordionTrigger className="hover:no-underline py-6">
+                        <div className="flex items-center justify-between w-full text-left mr-4">
+                          <div className="flex-1">
+                            <h3 className="text-xl font-bold mb-2">{job.title}</h3>
+                            <div className="flex flex-wrap gap-3 text-sm text-muted-foreground">
+                              <div className="flex items-center gap-1">
+                                <Briefcase className="h-4 w-4" />
+                                <span>{job.department}</span>
+                              </div>
+                              <div className="flex items-center gap-1">
+                                <MapPin className="h-4 w-4" />
+                                <span>{job.location}</span>
+                              </div>
+                              <div className="flex items-center gap-1">
+                                <DollarSign className="h-4 w-4" />
+                                <span>{job.salary_range}</span>
+                              </div>
+                            </div>
+                          </div>
+                          <div className="flex flex-col gap-2">
+                            <Badge variant={getVariantForLevel(job.experience_level)}>
+                              {job.experience_level.replace('-', ' ').replace(/\b\w/g, l => l.toUpperCase())}
+                            </Badge>
+                            <Badge variant="outline">
+                              {job.employment_type.replace('-', ' ').replace(/\b\w/g, l => l.toUpperCase())}
+                            </Badge>
+                          </div>
+                        </div>
+                      </AccordionTrigger>
+                      <AccordionContent className="pb-6">
+                        <div className="space-y-6">
+                          <p className="text-muted-foreground leading-relaxed">
+                            {job.description}
+                          </p>
+                          
+                          <div className="grid md:grid-cols-2 gap-6">
+                            <div>
+                              <h4 className="font-semibold mb-3">Requirements</h4>
+                              <ul className="space-y-2 text-sm text-muted-foreground">
+                                {job.requirements.map((req, index) => (
+                                  <li key={index} className="flex items-start gap-2">
+                                    <span className="w-1.5 h-1.5 rounded-full bg-primary mt-2 flex-shrink-0"></span>
+                                    <span>{req}</span>
+                                  </li>
+                                ))}
+                              </ul>
+                            </div>
+                            
+                            <div>
+                              <h4 className="font-semibold mb-3">Responsibilities</h4>
+                              <ul className="space-y-2 text-sm text-muted-foreground">
+                                {job.responsibilities.map((resp, index) => (
+                                  <li key={index} className="flex items-start gap-2">
+                                    <span className="w-1.5 h-1.5 rounded-full bg-primary mt-2 flex-shrink-0"></span>
+                                    <span>{resp}</span>
+                                  </li>
+                                ))}
+                              </ul>
+                            </div>
+                          </div>
+
+                          {job.benefits && job.benefits.length > 0 && (
+                            <div>
+                              <h4 className="font-semibold mb-3">Benefits</h4>
+                              <ul className="grid md:grid-cols-2 gap-2 text-sm text-muted-foreground">
+                                {job.benefits.map((benefit, index) => (
+                                  <li key={index} className="flex items-start gap-2">
+                                    <span className="w-1.5 h-1.5 rounded-full bg-green-500 mt-2 flex-shrink-0"></span>
+                                    <span>{benefit}</span>
+                                  </li>
+                                ))}
+                              </ul>
+                            </div>
+                          )}
+                          
+                          <div className="pt-4 border-t">
+                            <Button size="lg" className="w-full md:w-auto">
+                              Apply for this Position
+                            </Button>
+                            {job.application_deadline && (
+                              <p className="text-sm text-muted-foreground mt-2">
+                                Application deadline: {new Date(job.application_deadline).toLocaleDateString()}
+                              </p>
+                            )}
+                          </div>
+                        </div>
+                      </AccordionContent>
+                    </AccordionItem>
+                  ))}
+                </Accordion>
               </div>
-              <div className="p-4">
-                <div className="h-12 w-12 mx-auto rounded-full bg-primary/10 flex items-center justify-center mb-4">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-primary">
-                    <path d="M12 20.5c4.4 0 8-3.6 8-8V6.5l-8-4-8 4V12.5c0 4.4 3.6 8 8 8Z" /><path d="M12 12.5v3" /><path d="M12 2.5v3" /><path d="M16 12.5a4 4 0 0 1-8 0" />
-                  </svg>
-                </div>
-                <h3 className="text-lg font-semibold mb-2">401(k) Matching</h3>
-                <p className="text-muted-foreground">We help you save for the future with employer matching.</p>
+            ) : (
+              <div className="text-center py-12">
+                <h3 className="text-xl font-semibold mb-2">No Open Positions</h3>
+                <p className="text-muted-foreground">
+                  We don't have any open positions at the moment, but we're always looking for talented individuals. Check back soon or send us your resume!
+                </p>
               </div>
-              <div className="p-4">
-                <div className="h-12 w-12 mx-auto rounded-full bg-primary/10 flex items-center justify-center mb-4">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-primary">
-                    <path d="M2 20h20" /><path d="M5 20V7a1 1 0 0 1 1-1h4v14" /><path d="M9 6V3h2" /><path d="M9 10h12V6a1 1 0 0 0-1-1h-7" /><path d="M13 20v-5a1 1 0 0 1 1-1h5v6" />
-                  </svg>
+            )}
+          </div>
+        </section>
+
+        {/* Company Culture */}
+        <section className="py-16">
+          <div className="container px-4 md:px-6 mx-auto">
+            <div className="max-w-3xl mx-auto text-center">
+              <h2 className="text-3xl font-bold mb-6">Our Culture</h2>
+              <p className="text-lg text-muted-foreground mb-8">
+                We believe in creating an inclusive, collaborative environment where everyone can do their best work. 
+                Our team is passionate about using technology to solve real problems and make a positive impact on people's financial lives.
+              </p>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-center">
+                <div>
+                  <div className="h-16 w-16 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-4">
+                    <span className="text-2xl">🤝</span>
+                  </div>
+                  <h3 className="font-semibold mb-2">Collaboration</h3>
+                  <p className="text-sm text-muted-foreground">We work together across teams to achieve common goals</p>
                 </div>
-                <h3 className="text-lg font-semibold mb-2">Remote Work Options</h3>
-                <p className="text-muted-foreground">Flexible work arrangements to suit your lifestyle.</p>
+                <div>
+                  <div className="h-16 w-16 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-4">
+                    <span className="text-2xl">🚀</span>
+                  </div>
+                  <h3 className="font-semibold mb-2">Innovation</h3>
+                  <p className="text-sm text-muted-foreground">We encourage creative thinking and innovative solutions</p>
+                </div>
+                <div>
+                  <div className="h-16 w-16 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-4">
+                    <span className="text-2xl">💪</span>
+                  </div>
+                  <h3 className="font-semibold mb-2">Growth</h3>
+                  <p className="text-sm text-muted-foreground">We invest in your professional and personal development</p>
+                </div>
               </div>
             </div>
           </div>
         </section>
 
-        {/* Open Positions */}
-        <section className="py-16">
-          <div className="container px-4 md:px-6 mx-auto">
-            <h2 className="text-3xl font-bold mb-8 text-center">Open Positions</h2>
-            
-            <Accordion type="single" collapsible className="w-full">
-              {jobListings.map(job => (
-                <AccordionItem key={job.id} value={job.id}>
-                  <AccordionTrigger className="hover:no-underline">
-                    <div className="flex flex-col md:flex-row md:items-center justify-between w-full text-left">
-                      <div className="font-bold text-lg">{job.title}</div>
-                      <div className="flex flex-col md:flex-row gap-2 md:gap-4 text-sm text-muted-foreground mt-2 md:mt-0">
-                        <div>{job.department}</div>
-                        <div className="hidden md:block">•</div>
-                        <div>{job.location}</div>
-                        <div className="hidden md:block">•</div>
-                        <div>{job.type}</div>
-                      </div>
-                    </div>
-                  </AccordionTrigger>
-                  <AccordionContent>
-                    <div className="pt-2 pb-4">
-                      <p className="mb-4 text-muted-foreground">{job.description}</p>
-                      
-                      <h4 className="font-bold mt-4 mb-2">Requirements:</h4>
-                      <ul className="list-disc pl-5 mb-4 text-muted-foreground">
-                        {job.requirements.map((req, index) => (
-                          <li key={index} className="mb-1">{req}</li>
-                        ))}
-                      </ul>
-                      
-                      <h4 className="font-bold mt-4 mb-2">Responsibilities:</h4>
-                      <ul className="list-disc pl-5 mb-4 text-muted-foreground">
-                        {job.responsibilities.map((resp, index) => (
-                          <li key={index} className="mb-1">{resp}</li>
-                        ))}
-                      </ul>
-                      
-                      <Button className="mt-2">Apply Now</Button>
-                    </div>
-                  </AccordionContent>
-                </AccordionItem>
-              ))}
-            </Accordion>
+        {/* Call to Action */}
+        <section className="py-16 bg-primary/10">
+          <div className="container px-4 md:px-6 mx-auto text-center">
+            <h2 className="text-2xl font-bold mb-4">Don't See the Right Role?</h2>
+            <p className="text-muted-foreground mb-8 max-w-2xl mx-auto">
+              We're always looking for talented individuals who share our passion for financial technology. 
+              Send us your resume and let us know how you'd like to contribute to our mission.
+            </p>
+            <Button size="lg">Send Your Resume</Button>
           </div>
         </section>
       </main>
