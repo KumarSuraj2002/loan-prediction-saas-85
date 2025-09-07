@@ -166,7 +166,9 @@ const SignUpForm = ({ onToggleForm }: { onToggleForm: () => void }) => {
       </div>
       
       <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+        <form onSubmit={form.handleSubmit(onSubmit, (errors) => {
+          console.log("Form validation errors:", errors);
+        })} className="space-y-4">
           <FormField
             control={form.control}
             name="name"
@@ -291,7 +293,11 @@ const SignUpForm = ({ onToggleForm }: { onToggleForm: () => void }) => {
               </FormItem>
             )}
           />
-          <Button type="submit" className="w-full" disabled={loading}>
+          <Button type="submit" className="w-full" disabled={loading} onClick={() => {
+            console.log("Submit button clicked, current form values:", form.getValues());
+            console.log("Form is valid:", form.formState.isValid);
+            console.log("Form errors:", form.formState.errors);
+          }}>
             {loading ? "Creating Account..." : "Sign Up"}
           </Button>
         </form>
