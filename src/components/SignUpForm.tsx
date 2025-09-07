@@ -35,17 +35,28 @@ const formSchema = z.object({
     message: "Password must be at least 6 characters",
   }),
   confirmPassword: z.string(),
-}).refine((data) => {
-  if (data.authMethod === "email" && !data.email) {
-    return false;
-  }
-  if (data.authMethod === "phone" && !data.phone) {
-    return false;
-  }
-  return data.password === data.confirmPassword;
-}, {
-  message: "Passwords do not match or required field missing",
+}).refine((data) => data.password === data.confirmPassword, {
+  message: "Passwords do not match",
   path: ["confirmPassword"],
+}).refine((data) => {
+  if (data.authMethod === "email") {
+    return !!data.email;
+  }
+  if (data.authMethod === "phone") {
+    return !!data.phone;
+  }
+  return true;
+}, {
+  message: "Email is required when using email authentication",
+  path: ["email"],
+}).refine((data) => {
+  if (data.authMethod === "phone") {
+    return !!data.phone;
+  }
+  return true;
+}, {
+  message: "Phone number is required when using phone authentication", 
+  path: ["phone"],
 });
 
 const SignUpForm = ({ onToggleForm }: { onToggleForm: () => void }) => {
