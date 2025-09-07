@@ -79,6 +79,7 @@ const SignUpForm = ({ onToggleForm }: { onToggleForm: () => void }) => {
   });
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
+    console.log("SignUp form submitted with values:", values);
     setLoading(true);
     try {
       let authResponse;
@@ -96,8 +97,10 @@ const SignUpForm = ({ onToggleForm }: { onToggleForm: () => void }) => {
         });
         
         if (authResponse?.error) {
+          console.log("SignUp error:", authResponse.error);
           toast.error(authResponse.error.message);
         } else {
+          console.log("SignUp success:", authResponse);
           toast.success("Check your email for the verification link!");
           form.reset();
         }
@@ -114,14 +117,17 @@ const SignUpForm = ({ onToggleForm }: { onToggleForm: () => void }) => {
         });
         
         if (authResponse?.error) {
+          console.log("SignUp phone error:", authResponse.error);
           toast.error(authResponse.error.message);
         } else {
+          console.log("SignUp phone success:", authResponse);
           setPhoneForVerification(values.phone);
           setShowOTPVerification(true);
           toast.success("OTP sent to your phone number!");
         }
       }
     } catch (error) {
+      console.log("SignUp catch error:", error);
       toast.error("An unexpected error occurred");
     } finally {
       setLoading(false);

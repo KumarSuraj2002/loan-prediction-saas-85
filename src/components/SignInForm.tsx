@@ -65,6 +65,7 @@ const SignInForm = ({ onToggleForm }: { onToggleForm: () => void }) => {
   });
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
+    console.log("SignIn form submitted with values:", values);
     setLoading(true);
     try {
       let authResponse;
@@ -82,12 +83,15 @@ const SignInForm = ({ onToggleForm }: { onToggleForm: () => void }) => {
       }
 
       if (authResponse?.error) {
+        console.log("SignIn error:", authResponse.error);
         toast.error(authResponse.error.message);
       } else {
+        console.log("SignIn success:", authResponse);
         toast.success("Successfully signed in!");
         // Redirect will be handled by auth state change
       }
     } catch (error) {
+      console.log("SignIn catch error:", error);
       toast.error("An unexpected error occurred");
     } finally {
       setLoading(false);
