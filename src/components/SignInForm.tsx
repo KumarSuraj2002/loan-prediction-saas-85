@@ -30,16 +30,24 @@ const formSchema = z.object({
     message: "Password must be at least 6 characters",
   }),
 }).refine((data) => {
-  if (data.authMethod === "email" && !data.email) {
-    return false;
+  if (data.authMethod === "email") {
+    return !!data.email;
   }
-  if (data.authMethod === "phone" && !data.phone) {
-    return false;
+  if (data.authMethod === "phone") {
+    return !!data.phone;
   }
   return true;
 }, {
-  message: "Required field missing",
+  message: "Email is required when using email authentication",
   path: ["email"],
+}).refine((data) => {
+  if (data.authMethod === "phone") {
+    return !!data.phone;
+  }
+  return true;
+}, {
+  message: "Phone number is required when using phone authentication",
+  path: ["phone"],
 });
 
 const SignInForm = ({ onToggleForm }: { onToggleForm: () => void }) => {

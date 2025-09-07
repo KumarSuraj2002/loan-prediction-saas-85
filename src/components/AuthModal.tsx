@@ -1,6 +1,7 @@
 
 import { useState } from 'react';
-import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
+import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
 import SignInForm from './SignInForm';
 import SignUpForm from './SignUpForm';
 
@@ -24,6 +25,9 @@ const AuthModal = ({
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-md">
+        <VisuallyHidden>
+          <DialogTitle>Authentication</DialogTitle>
+        </VisuallyHidden>
         {view === 'signin' ? (
           <SignInForm onToggleForm={toggleForm} />
         ) : (
