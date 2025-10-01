@@ -81,10 +81,12 @@ const SignUpForm = ({ onToggleForm }: { onToggleForm: () => void }) => {
       let authResponse;
       
       if (values.authMethod === "email" && values.email) {
+        const redirectUrl = `${window.location.origin}/`;
         authResponse = await supabase.auth.signUp({
           email: values.email,
           password: values.password,
           options: {
+            emailRedirectTo: redirectUrl,
             data: {
               full_name: values.name,
             }
