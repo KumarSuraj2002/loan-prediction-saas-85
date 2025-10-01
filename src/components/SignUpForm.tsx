@@ -16,7 +16,6 @@ import { Input } from "@/components/ui/input";
 import { Eye, EyeOff } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import OTPVerification from "./OTPVerification";
 
 const formSchema = z.object({
   name: z.string().min(2, {
@@ -63,8 +62,6 @@ const SignUpForm = ({ onToggleForm }: { onToggleForm: () => void }) => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [showOTPVerification, setShowOTPVerification] = useState(false);
-  const [phoneForVerification, setPhoneForVerification] = useState("");
   
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -79,7 +76,6 @@ const SignUpForm = ({ onToggleForm }: { onToggleForm: () => void }) => {
   });
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
-    console.log("SignUp form submitted with values:", values);
     setLoading(true);
     try {
       let authResponse;
@@ -89,23 +85,12 @@ const SignUpForm = ({ onToggleForm }: { onToggleForm: () => void }) => {
           email: values.email,
           password: values.password,
           options: {
-            emailRedirectTo: `${window.location.origin}/`,
             data: {
               full_name: values.name,
             }
           }
         });
-        
-        if (authResponse?.error) {
-          console.log("SignUp error:", authResponse.error);
-          toast.error(authResponse.error.message);
-        } else {
-          console.log("SignUp success:", authResponse);
-          toast.success("Check your email for the verification link!");
-          form.reset();
-        }
       } else if (values.authMethod === "phone" && values.phone) {
-        // For phone, we first send OTP
         authResponse = await supabase.auth.signUp({
           phone: values.phone,
           password: values.password,
@@ -115,48 +100,23 @@ const SignUpForm = ({ onToggleForm }: { onToggleForm: () => void }) => {
             }
           }
         });
-        
-        if (authResponse?.error) {
-          console.log("SignUp phone error:", authResponse.error);
-          toast.error(authResponse.error.message);
-        } else {
-          console.log("SignUp phone success:", authResponse);
-          setPhoneForVerification(values.phone);
-          setShowOTPVerification(true);
-          toast.success("OTP sent to your phone number!");
-        }
+      }
+
+      if (authResponse?.error) {
+        toast.error(authResponse.error.message);
+      } else {
+        toast.success("Account created successfully! You can now sign in.");
+        form.reset();
+        onToggleForm(); // Switch to sign in form
       }
     } catch (error) {
-      console.log("SignUp catch error:", error);
       toast.error("An unexpected error occurred");
     } finally {
       setLoading(false);
     }
   };
 
-  const handleOTPVerified = () => {
-    setShowOTPVerification(false);
-    setPhoneForVerification("");
-    form.reset();
-    toast.success("Account created successfully!");
-  };
-
-  const handleBackFromOTP = () => {
-    setShowOTPVerification(false);
-    setPhoneForVerification("");
-  };
-
   const watchAuthMethod = form.watch("authMethod");
-
-  if (showOTPVerification) {
-    return (
-      <OTPVerification 
-        phone={phoneForVerification}
-        onVerified={handleOTPVerified}
-        onBack={handleBackFromOTP}
-      />
-    );
-  }
 
   return (
     <div className="space-y-6">
@@ -166,9 +126,7 @@ const SignUpForm = ({ onToggleForm }: { onToggleForm: () => void }) => {
       </div>
       
       <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit, (errors) => {
-          console.log("Form validation errors:", errors);
-        })} className="space-y-4">
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
           <FormField
             control={form.control}
             name="name"
@@ -293,11 +251,7 @@ const SignUpForm = ({ onToggleForm }: { onToggleForm: () => void }) => {
               </FormItem>
             )}
           />
-          <Button type="submit" className="w-full" disabled={loading} onClick={() => {
-            console.log("Submit button clicked, current form values:", form.getValues());
-            console.log("Form is valid:", form.formState.isValid);
-            console.log("Form errors:", form.formState.errors);
-          }}>
+          <Button type="submit" className="w-full" disabled={loading}>
             {loading ? "Creating Account..." : "Sign Up"}
           </Button>
         </form>
