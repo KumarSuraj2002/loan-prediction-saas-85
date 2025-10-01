@@ -1,267 +1,91 @@
 
 import { useState } from 'react';
-import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
-import { z } from "zod";
 import { Button } from "@/components/ui/button";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Eye, EyeOff } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
-const formSchema = z.object({
-  name: z.string().min(2, {
-    message: "Name must be at least 2 characters",
-  }),
-  authMethod: z.enum(["email", "phone"], {
-    required_error: "Please select authentication method",
-  }),
-  email: z.string().email({
-    message: "Invalid email address",
-  }).optional(),
-  phone: z.string().min(10, {
-    message: "Phone number must be at least 10 digits",
-  }).optional(),
-  password: z.string().min(6, {
-    message: "Password must be at least 6 characters",
-  }),
-  confirmPassword: z.string(),
-}).refine((data) => data.password === data.confirmPassword, {
-  message: "Passwords do not match",
-  path: ["confirmPassword"],
-}).refine((data) => {
-  if (data.authMethod === "email") {
-    return !!data.email;
-  }
-  if (data.authMethod === "phone") {
-    return !!data.phone;
-  }
-  return true;
-}, {
-  message: "Email is required when using email authentication",
-  path: ["email"],
-}).refine((data) => {
-  if (data.authMethod === "phone") {
-    return !!data.phone;
-  }
-  return true;
-}, {
-  message: "Phone number is required when using phone authentication", 
-  path: ["phone"],
-});
+interface SignUpFormData {
+  email: string;
+  password: string;
+  name: string;
+}
 
 const SignUpForm = ({ onToggleForm }: { onToggleForm: () => void }) => {
-  const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [loading, setLoading] = useState(false);
-  
-  const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
-    defaultValues: {
-      name: "",
-      authMethod: "email",
-      email: "",
-      phone: "",
-      password: "",
-      confirmPassword: "",
-    },
-  });
+  const { register, handleSubmit, formState: { errors } } = useForm<SignUpFormData>();
 
-  const onSubmit = async (values: z.infer<typeof formSchema>) => {
+  const onSubmit = async (data: SignUpFormData) => {
     setLoading(true);
     try {
-      let authResponse;
-      
-      if (values.authMethod === "email" && values.email) {
-        const redirectUrl = `${window.location.origin}/`;
-        authResponse = await supabase.auth.signUp({
-          email: values.email,
-          password: values.password,
-          options: {
-            emailRedirectTo: redirectUrl,
-            data: {
-              full_name: values.name,
-            }
-          }
-        });
-      } else if (values.authMethod === "phone" && values.phone) {
-        authResponse = await supabase.auth.signUp({
-          phone: values.phone,
-          password: values.password,
-          options: {
-            data: {
-              full_name: values.name,
-            }
-          }
-        });
-      }
+      const { error } = await supabase.auth.signUp({
+        email: data.email,
+        password: data.password,
+        options: {
+          emailRedirectTo: `${window.location.origin}/`,
+          data: { full_name: data.name }
+        }
+      });
 
-      if (authResponse?.error) {
-        toast.error(authResponse.error.message);
+      if (error) {
+        toast.error(error.message);
       } else {
-        toast.success("Account created successfully! You can now sign in.");
-        form.reset();
-        onToggleForm(); // Switch to sign in form
+        toast.success("Account created! Please sign in.");
+        onToggleForm();
       }
     } catch (error) {
-      toast.error("An unexpected error occurred");
+      toast.error("Signup failed");
     } finally {
       setLoading(false);
     }
   };
 
-  const watchAuthMethod = form.watch("authMethod");
-
   return (
     <div className="space-y-6">
       <div className="space-y-2 text-center">
-        <h2 className="text-3xl font-bold">Create an Account</h2>
-        <p className="text-gray-500">Enter your information to create an account</p>
+        <h2 className="text-3xl font-bold">Create Account</h2>
+        <p className="text-muted-foreground">Enter your details to sign up</p>
       </div>
       
-      <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-          <FormField
-            control={form.control}
-            name="name"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Full Name</FormLabel>
-                <FormControl>
-                  <Input placeholder="John Doe" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+        <div className="space-y-2">
+          <label className="text-sm font-medium">Name</label>
+          <Input 
+            {...register("name", { required: "Name is required" })}
+            placeholder="John Doe"
           />
-          <FormField
-            control={form.control}
-            name="authMethod"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Authentication Method</FormLabel>
-                <FormControl>
-                  <select 
-                    {...field} 
-                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                  >
-                    <option value="email">Email Address</option>
-                    <option value="phone">Phone Number</option>
-                  </select>
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
+          {errors.name && <p className="text-sm text-destructive">{errors.name.message}</p>}
+        </div>
+
+        <div className="space-y-2">
+          <label className="text-sm font-medium">Email</label>
+          <Input 
+            {...register("email", { required: "Email is required" })}
+            type="email"
+            placeholder="you@example.com"
           />
-          {watchAuthMethod === "email" && (
-            <FormField
-              control={form.control}
-              name="email"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Email</FormLabel>
-                  <FormControl>
-                    <Input placeholder="johndoe@example.com" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          )}
-          {watchAuthMethod === "phone" && (
-            <FormField
-              control={form.control}
-              name="phone"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Phone Number</FormLabel>
-                  <FormControl>
-                    <Input placeholder="+1234567890" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          )}
-          <FormField
-            control={form.control}
-            name="password"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Password</FormLabel>
-                <FormControl>
-                  <div className="relative">
-                    <Input 
-                      type={showPassword ? "text" : "password"} 
-                      placeholder="••••••••" 
-                      {...field} 
-                    />
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="icon"
-                      className="absolute right-1 top-1"
-                      onClick={() => setShowPassword(!showPassword)}
-                    >
-                      {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                      <span className="sr-only">
-                        {showPassword ? "Hide password" : "Show password"}
-                      </span>
-                    </Button>
-                  </div>
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
+          {errors.email && <p className="text-sm text-destructive">{errors.email.message}</p>}
+        </div>
+
+        <div className="space-y-2">
+          <label className="text-sm font-medium">Password</label>
+          <Input 
+            {...register("password", { required: "Password is required", minLength: 6 })}
+            type="password"
+            placeholder="••••••••"
           />
-          <FormField
-            control={form.control}
-            name="confirmPassword"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Confirm Password</FormLabel>
-                <FormControl>
-                  <div className="relative">
-                    <Input 
-                      type={showConfirmPassword ? "text" : "password"} 
-                      placeholder="••••••••" 
-                      {...field} 
-                    />
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="icon"
-                      className="absolute right-1 top-1"
-                      onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                    >
-                      {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                      <span className="sr-only">
-                        {showConfirmPassword ? "Hide password" : "Show password"}
-                      </span>
-                    </Button>
-                  </div>
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          <Button type="submit" className="w-full" disabled={loading}>
-            {loading ? "Creating Account..." : "Sign Up"}
-          </Button>
-        </form>
-      </Form>
+          {errors.password && <p className="text-sm text-destructive">{errors.password.message}</p>}
+        </div>
+
+        <Button type="submit" className="w-full" disabled={loading}>
+          {loading ? "Creating..." : "Sign Up"}
+        </Button>
+      </form>
       
       <div className="text-center">
-        <p>Already have an account?{" "}
-          <Button variant="link" className="p-0" onClick={onToggleForm}>
+        <p className="text-sm">Already have an account?{" "}
+          <Button variant="link" className="p-0 h-auto" onClick={onToggleForm}>
             Sign In
           </Button>
         </p>
