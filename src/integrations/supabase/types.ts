@@ -380,6 +380,66 @@ export type Database = {
         }
         Relationships: []
       }
+      profiles: {
+        Row: {
+          address: string | null
+          avatar_url: string | null
+          city: string | null
+          created_at: string
+          date_of_birth: string | null
+          employer_name: string | null
+          employment_status: string | null
+          full_name: string | null
+          id: string
+          monthly_income: number | null
+          occupation: string | null
+          phone: string | null
+          postal_code: string | null
+          profile_completed: boolean
+          state: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          address?: string | null
+          avatar_url?: string | null
+          city?: string | null
+          created_at?: string
+          date_of_birth?: string | null
+          employer_name?: string | null
+          employment_status?: string | null
+          full_name?: string | null
+          id?: string
+          monthly_income?: number | null
+          occupation?: string | null
+          phone?: string | null
+          postal_code?: string | null
+          profile_completed?: boolean
+          state?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          address?: string | null
+          avatar_url?: string | null
+          city?: string | null
+          created_at?: string
+          date_of_birth?: string | null
+          employer_name?: string | null
+          employment_status?: string | null
+          full_name?: string | null
+          id?: string
+          monthly_income?: number | null
+          occupation?: string | null
+          phone?: string | null
+          postal_code?: string | null
+          profile_completed?: boolean
+          state?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       site_settings: {
         Row: {
           created_at: string
