@@ -11,7 +11,7 @@ interface SignInFormData {
   password: string;
 }
 
-const SignInForm = ({ onToggleForm }: { onToggleForm: () => void }) => {
+const SignInForm = ({ onToggleForm, onClose }: { onToggleForm: () => void; onClose: () => void }) => {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const { register, handleSubmit, formState: { errors } } = useForm<SignInFormData>();
@@ -24,12 +24,13 @@ const SignInForm = ({ onToggleForm }: { onToggleForm: () => void }) => {
         password: data.password,
       });
 
-      if (error) {
-        toast.error(error.message);
-      } else {
-        toast.success("Signed in successfully!");
-        navigate("/");
-      }
+    if (error) {
+      toast.error(error.message);
+    } else {
+      toast.success("Signed in successfully!");
+      onClose();
+      navigate("/");
+    }
     } catch (error) {
       toast.error("Sign in failed");
     } finally {

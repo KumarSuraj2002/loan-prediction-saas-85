@@ -29,7 +29,7 @@ const AuthModal = ({
           <DialogTitle>Authentication</DialogTitle>
         </VisuallyHidden>
         {view === 'signin' ? (
-          <SignInForm onToggleForm={toggleForm} />
+          <SignInForm onToggleForm={toggleForm} onClose={onClose} />
         ) : (
           <SignUpForm onToggleForm={toggleForm} />
         )}
