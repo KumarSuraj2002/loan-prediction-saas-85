@@ -1,15 +1,34 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import { Menu } from "lucide-react";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { Menu, User, LogOut } from "lucide-react";
 import { Link } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
+import { User as SupabaseUser } from '@supabase/supabase-js';
+import { toast } from "sonner";
 import AuthModal from "./AuthModal";
 
 const Navbar = () => {
   const [activeTab, setActiveTab] = useState('home');
   const [authModalOpen, setAuthModalOpen] = useState(false);
   const [authModalView, setAuthModalView] = useState<'signin' | 'signup'>('signin');
+  const [user, setUser] = useState<SupabaseUser | null>(null);
+
+  useEffect(() => {
+    // Get current user
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setUser(session?.user ?? null);
+    });
+
+    // Listen for auth changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user ?? null);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
 
   const handleTabClick = (tab: string) => {
     setActiveTab(tab);
@@ -27,6 +46,15 @@ const Navbar = () => {
   const openSignUp = () => {
     setAuthModalView('signup');
     setAuthModalOpen(true);
+  };
+
+  const handleSignOut = async () => {
+    const { error } = await supabase.auth.signOut();
+    if (error) {
+      toast.error("Failed to sign out");
+    } else {
+      toast.success("Signed out successfully");
+    }
   };
 
   const navItems = [
@@ -72,12 +100,37 @@ const Navbar = () => {
         </nav>
         
         <div className="flex items-center gap-2">
-          <Button variant="outline" size="sm" className="hidden md:flex" onClick={openSignIn}>
-            Sign In
-          </Button>
-          <Button size="sm" className="hidden md:flex" onClick={openSignUp}>
-            Get Started
-          </Button>
+          {user ? (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" size="icon" className="rounded-full">
+                  <User className="h-5 w-5" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-56">
+                <DropdownMenuLabel>My Account</DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <div className="px-2 py-2 text-sm">
+                  <p className="font-medium">{user.user_metadata?.full_name || 'User'}</p>
+                  <p className="text-muted-foreground text-xs">{user.email}</p>
+                </div>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={handleSignOut}>
+                  <LogOut className="mr-2 h-4 w-4" />
+                  Sign Out
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          ) : (
+            <>
+              <Button variant="outline" size="sm" className="hidden md:flex" onClick={openSignIn}>
+                Sign In
+              </Button>
+              <Button size="sm" className="hidden md:flex" onClick={openSignUp}>
+                Get Started
+              </Button>
+            </>
+          )}
           
           {/* Mobile Navigation */}
           <Sheet>
@@ -114,18 +167,36 @@ const Navbar = () => {
                     </Link>
                   )
                 ))}
-                <Button variant="outline" className="mt-4 w-full justify-center" onClick={() => {
-                  document.querySelector('[data-state="open"]')?.setAttribute('data-state', 'closed');
-                  openSignIn();
-                }}>
-                  Sign In
-                </Button>
-                <Button className="w-full justify-center" onClick={() => {
-                  document.querySelector('[data-state="open"]')?.setAttribute('data-state', 'closed');
-                  openSignUp();
-                }}>
-                  Get Started
-                </Button>
+                {user ? (
+                  <>
+                    <div className="mt-4 px-2 py-2 border rounded-lg">
+                      <p className="font-medium text-sm">{user.user_metadata?.full_name || 'User'}</p>
+                      <p className="text-muted-foreground text-xs">{user.email}</p>
+                    </div>
+                    <Button variant="outline" className="w-full justify-center" onClick={() => {
+                      document.querySelector('[data-state="open"]')?.setAttribute('data-state', 'closed');
+                      handleSignOut();
+                    }}>
+                      <LogOut className="mr-2 h-4 w-4" />
+                      Sign Out
+                    </Button>
+                  </>
+                ) : (
+                  <>
+                    <Button variant="outline" className="mt-4 w-full justify-center" onClick={() => {
+                      document.querySelector('[data-state="open"]')?.setAttribute('data-state', 'closed');
+                      openSignIn();
+                    }}>
+                      Sign In
+                    </Button>
+                    <Button className="w-full justify-center" onClick={() => {
+                      document.querySelector('[data-state="open"]')?.setAttribute('data-state', 'closed');
+                      openSignUp();
+                    }}>
+                      Get Started
+                    </Button>
+                  </>
+                )}
               </nav>
             </SheetContent>
           </Sheet>
