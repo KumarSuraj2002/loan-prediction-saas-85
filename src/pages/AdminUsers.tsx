@@ -3,45 +3,63 @@ import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Eye, Edit, Trash2, Plus } from 'lucide-react';
+import { Eye, Edit, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 
-interface User {
+interface UserProfile {
   id: string;
-  full_name: string;
-  email: string;
-  phone?: string;
-  registration_date: string;
-  last_login?: string;
-  status: string;
-  user_data?: any;
+  user_id: string;
+  full_name: string | null;
+  phone: string | null;
+  avatar_url: string | null;
+  address: string | null;
+  city: string | null;
+  state: string | null;
+  postal_code: string | null;
+  employment_status: string | null;
+  employer_name: string | null;
+  occupation: string | null;
+  monthly_income: number | null;
+  date_of_birth: string | null;
+  profile_completed: boolean;
   created_at: string;
   updated_at: string;
+  email?: string;
 }
 
 const AdminUsers = () => {
-  const [users, setUsers] = useState<User[]>([]);
+  const [users, setUsers] = useState<UserProfile[]>([]);
   const [loading, setLoading] = useState(true);
-  const [selectedUser, setSelectedUser] = useState<User | null>(null);
+  const [selectedUser, setSelectedUser] = useState<UserProfile | null>(null);
   const [isViewDialogOpen, setIsViewDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
-  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
-  const [editForm, setEditForm] = useState<Partial<User>>({});
+  const [editForm, setEditForm] = useState<Partial<UserProfile>>({});
 
   const fetchUsers = async () => {
     try {
       const { data, error } = await supabase
-        .from('users')
+        .from('profiles')
         .select('*')
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      setUsers(data || []);
+      
+      // Fetch email from auth.users for each profile
+      const usersWithEmail = await Promise.all((data || []).map(async (profile) => {
+        const { data: authData } = await supabase.auth.admin.getUserById(profile.user_id);
+        return {
+          ...profile,
+          email: authData?.user?.email || 'N/A'
+        };
+      }));
+      
+      setUsers(usersWithEmail);
     } catch (error) {
       console.error('Error fetching users:', error);
       toast.error('Failed to fetch users');
@@ -57,24 +75,24 @@ const AdminUsers = () => {
   const saveUser = async () => {
     try {
       if (selectedUser) {
-        // Update existing user
         const { error } = await supabase
-          .from('users')
-          .update(editForm)
+          .from('profiles')
+          .update({
+            full_name: editForm.full_name,
+            phone: editForm.phone,
+            address: editForm.address,
+            city: editForm.city,
+            state: editForm.state,
+            postal_code: editForm.postal_code,
+            employment_status: editForm.employment_status,
+            employer_name: editForm.employer_name,
+            occupation: editForm.occupation,
+          })
           .eq('id', selectedUser.id);
 
         if (error) throw error;
-        toast.success('User updated');
+        toast.success('User profile updated');
         setIsEditDialogOpen(false);
-      } else {
-        // Add new user
-        const { error } = await supabase
-          .from('users')
-          .insert([editForm as any]);
-
-        if (error) throw error;
-        toast.success('User added');
-        setIsAddDialogOpen(false);
       }
       
       fetchUsers();
@@ -87,17 +105,17 @@ const AdminUsers = () => {
   };
 
   const deleteUser = async (id: string) => {
-    if (!confirm('Are you sure you want to delete this user?')) return;
+    if (!confirm('Are you sure you want to delete this user profile?')) return;
 
     try {
       const { error } = await supabase
-        .from('users')
+        .from('profiles')
         .delete()
         .eq('id', id);
 
       if (error) throw error;
       
-      toast.success('User deleted');
+      toast.success('User profile deleted');
       fetchUsers();
     } catch (error) {
       console.error('Error deleting user:', error);
@@ -105,12 +123,12 @@ const AdminUsers = () => {
     }
   };
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'active': return 'bg-green-500';
-      case 'suspended': return 'bg-red-500';
-      default: return 'bg-gray-500';
-    }
+  const getCompletionBadge = (completed: boolean) => {
+    return completed ? (
+      <Badge className="bg-green-500">Complete</Badge>
+    ) : (
+      <Badge className="bg-yellow-500">Incomplete</Badge>
+    );
   };
 
   if (loading) {
@@ -120,43 +138,38 @@ const AdminUsers = () => {
   return (
     <div className="space-y-6">
       <Card>
-        <CardHeader className="flex flex-row items-center justify-between">
-          <CardTitle>Users Management</CardTitle>
-          <Button onClick={() => {
-            setEditForm({ status: 'active' });
-            setSelectedUser(null);
-            setIsAddDialogOpen(true);
-          }}>
-            <Plus className="h-4 w-4 mr-2" />
-            Add User
-          </Button>
+        <CardHeader>
+          <CardTitle>User Profiles</CardTitle>
         </CardHeader>
         <CardContent>
           <Table>
             <TableHeader>
               <TableRow>
+                <TableHead>Avatar</TableHead>
                 <TableHead>Name</TableHead>
                 <TableHead>Email</TableHead>
                 <TableHead>Phone</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Registered</TableHead>
-                <TableHead>Last Login</TableHead>
+                <TableHead>City</TableHead>
+                <TableHead>Employment</TableHead>
+                <TableHead>Profile Status</TableHead>
                 <TableHead>Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {users.map((user) => (
                 <TableRow key={user.id}>
-                  <TableCell className="font-medium">{user.full_name}</TableCell>
+                  <TableCell>
+                    <Avatar>
+                      <AvatarImage src={user.avatar_url || undefined} alt={user.full_name || 'User'} />
+                      <AvatarFallback>{user.full_name?.charAt(0) || 'U'}</AvatarFallback>
+                    </Avatar>
+                  </TableCell>
+                  <TableCell className="font-medium">{user.full_name || 'N/A'}</TableCell>
                   <TableCell>{user.email}</TableCell>
                   <TableCell>{user.phone || 'N/A'}</TableCell>
-                  <TableCell>
-                    <Badge className={getStatusColor(user.status)}>
-                      {user.status}
-                    </Badge>
-                  </TableCell>
-                  <TableCell>{new Date(user.registration_date).toLocaleDateString()}</TableCell>
-                  <TableCell>{user.last_login ? new Date(user.last_login).toLocaleDateString() : 'Never'}</TableCell>
+                  <TableCell>{user.city || 'N/A'}</TableCell>
+                  <TableCell>{user.employment_status || 'N/A'}</TableCell>
+                  <TableCell>{getCompletionBadge(user.profile_completed)}</TableCell>
                   <TableCell>
                     <div className="flex space-x-2">
                       <Button
@@ -198,38 +211,85 @@ const AdminUsers = () => {
 
       {/* View Dialog */}
       <Dialog open={isViewDialogOpen} onOpenChange={setIsViewDialogOpen}>
-        <DialogContent>
+        <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>User Details</DialogTitle>
+            <DialogTitle>User Profile Details</DialogTitle>
           </DialogHeader>
           {selectedUser && (
             <div className="space-y-4">
+              <div className="flex items-center gap-4">
+                <Avatar className="h-20 w-20">
+                  <AvatarImage src={selectedUser.avatar_url || undefined} alt={selectedUser.full_name || 'User'} />
+                  <AvatarFallback className="text-2xl">{selectedUser.full_name?.charAt(0) || 'U'}</AvatarFallback>
+                </Avatar>
+                <div>
+                  <h3 className="text-lg font-semibold">{selectedUser.full_name || 'N/A'}</h3>
+                  <p className="text-sm text-muted-foreground">{selectedUser.email}</p>
+                  {getCompletionBadge(selectedUser.profile_completed)}
+                </div>
+              </div>
+
               <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <Label>Full Name</Label>
-                  <p className="text-sm">{selectedUser.full_name}</p>
-                </div>
-                <div>
-                  <Label>Email</Label>
-                  <p className="text-sm">{selectedUser.email}</p>
-                </div>
                 <div>
                   <Label>Phone</Label>
                   <p className="text-sm">{selectedUser.phone || 'N/A'}</p>
                 </div>
                 <div>
-                  <Label>Status</Label>
-                  <Badge className={getStatusColor(selectedUser.status)}>
-                    {selectedUser.status}
-                  </Badge>
+                  <Label>Date of Birth</Label>
+                  <p className="text-sm">{selectedUser.date_of_birth ? new Date(selectedUser.date_of_birth).toLocaleDateString() : 'N/A'}</p>
+                </div>
+              </div>
+
+              <div>
+                <Label>Address</Label>
+                <p className="text-sm">{selectedUser.address || 'N/A'}</p>
+              </div>
+
+              <div className="grid grid-cols-3 gap-4">
+                <div>
+                  <Label>City</Label>
+                  <p className="text-sm">{selectedUser.city || 'N/A'}</p>
                 </div>
                 <div>
-                  <Label>Registration Date</Label>
-                  <p className="text-sm">{new Date(selectedUser.registration_date).toLocaleString()}</p>
+                  <Label>State</Label>
+                  <p className="text-sm">{selectedUser.state || 'N/A'}</p>
                 </div>
                 <div>
-                  <Label>Last Login</Label>
-                  <p className="text-sm">{selectedUser.last_login ? new Date(selectedUser.last_login).toLocaleString() : 'Never'}</p>
+                  <Label>Postal Code</Label>
+                  <p className="text-sm">{selectedUser.postal_code || 'N/A'}</p>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label>Employment Status</Label>
+                  <p className="text-sm">{selectedUser.employment_status || 'N/A'}</p>
+                </div>
+                <div>
+                  <Label>Occupation</Label>
+                  <p className="text-sm">{selectedUser.occupation || 'N/A'}</p>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label>Employer</Label>
+                  <p className="text-sm">{selectedUser.employer_name || 'N/A'}</p>
+                </div>
+                <div>
+                  <Label>Monthly Income</Label>
+                  <p className="text-sm">{selectedUser.monthly_income ? `₹${selectedUser.monthly_income.toLocaleString()}` : 'N/A'}</p>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4 pt-4 border-t">
+                <div>
+                  <Label>Registered</Label>
+                  <p className="text-sm">{new Date(selectedUser.created_at).toLocaleString()}</p>
+                </div>
+                <div>
+                  <Label>Last Updated</Label>
+                  <p className="text-sm">{new Date(selectedUser.updated_at).toLocaleString()}</p>
                 </div>
               </div>
             </div>
@@ -237,18 +297,17 @@ const AdminUsers = () => {
         </DialogContent>
       </Dialog>
 
-      {/* Edit/Add Dialog */}
-      <Dialog open={isEditDialogOpen || isAddDialogOpen} onOpenChange={(open) => {
+      {/* Edit Dialog */}
+      <Dialog open={isEditDialogOpen} onOpenChange={(open) => {
         setIsEditDialogOpen(open);
-        setIsAddDialogOpen(open);
         if (!open) {
           setEditForm({});
           setSelectedUser(null);
         }
       }}>
-        <DialogContent>
+        <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>{selectedUser ? 'Edit User' : 'Add User'}</DialogTitle>
+            <DialogTitle>Edit User Profile</DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
             <div>
@@ -259,46 +318,104 @@ const AdminUsers = () => {
                 placeholder="Enter full name"
               />
             </div>
+            
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label>Phone</Label>
+                <Input
+                  value={editForm.phone || ''}
+                  onChange={(e) => setEditForm({ ...editForm, phone: e.target.value })}
+                  placeholder="Enter phone number"
+                />
+              </div>
+              <div>
+                <Label>Email (Read-only)</Label>
+                <Input
+                  value={editForm.email || ''}
+                  disabled
+                />
+              </div>
+            </div>
+
             <div>
-              <Label>Email</Label>
+              <Label>Address</Label>
               <Input
-                type="email"
-                value={editForm.email || ''}
-                onChange={(e) => setEditForm({ ...editForm, email: e.target.value })}
-                placeholder="Enter email"
+                value={editForm.address || ''}
+                onChange={(e) => setEditForm({ ...editForm, address: e.target.value })}
+                placeholder="Enter address"
               />
             </div>
+
+            <div className="grid grid-cols-3 gap-4">
+              <div>
+                <Label>City</Label>
+                <Input
+                  value={editForm.city || ''}
+                  onChange={(e) => setEditForm({ ...editForm, city: e.target.value })}
+                  placeholder="City"
+                />
+              </div>
+              <div>
+                <Label>State</Label>
+                <Input
+                  value={editForm.state || ''}
+                  onChange={(e) => setEditForm({ ...editForm, state: e.target.value })}
+                  placeholder="State"
+                />
+              </div>
+              <div>
+                <Label>Postal Code</Label>
+                <Input
+                  value={editForm.postal_code || ''}
+                  onChange={(e) => setEditForm({ ...editForm, postal_code: e.target.value })}
+                  placeholder="Postal code"
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label>Employment Status</Label>
+                <Select
+                  value={editForm.employment_status || undefined}
+                  onValueChange={(value) => setEditForm({ ...editForm, employment_status: value })}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select employment status" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="employed">Employed</SelectItem>
+                    <SelectItem value="self-employed">Self-Employed</SelectItem>
+                    <SelectItem value="unemployed">Unemployed</SelectItem>
+                    <SelectItem value="student">Student</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <Label>Occupation</Label>
+                <Input
+                  value={editForm.occupation || ''}
+                  onChange={(e) => setEditForm({ ...editForm, occupation: e.target.value })}
+                  placeholder="Occupation"
+                />
+              </div>
+            </div>
+
             <div>
-              <Label>Phone</Label>
+              <Label>Employer Name</Label>
               <Input
-                value={editForm.phone || ''}
-                onChange={(e) => setEditForm({ ...editForm, phone: e.target.value })}
-                placeholder="Enter phone number"
+                value={editForm.employer_name || ''}
+                onChange={(e) => setEditForm({ ...editForm, employer_name: e.target.value })}
+                placeholder="Employer name"
               />
             </div>
-            <div>
-              <Label>Status</Label>
-              <Select
-                value={editForm.status}
-                onValueChange={(value) => setEditForm({ ...editForm, status: value as any })}
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="active">Active</SelectItem>
-                  <SelectItem value="inactive">Inactive</SelectItem>
-                  <SelectItem value="suspended">Suspended</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
+
             <div className="flex space-x-2">
               <Button onClick={saveUser}>
-                {selectedUser ? 'Update' : 'Add'} User
+                Save Changes
               </Button>
               <Button variant="outline" onClick={() => {
                 setIsEditDialogOpen(false);
-                setIsAddDialogOpen(false);
                 setEditForm({});
                 setSelectedUser(null);
               }}>
