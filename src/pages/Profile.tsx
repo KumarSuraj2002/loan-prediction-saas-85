@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useForm } from "react-hook-form";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -6,11 +6,12 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
-import { Loader2 } from "lucide-react";
+import { Loader2, Upload, X } from "lucide-react";
 
 interface ProfileData {
   full_name: string;
@@ -30,6 +31,10 @@ const Profile = () => {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [profileCompleted, setProfileCompleted] = useState(false);
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
+  const [uploading, setUploading] = useState(false);
+  const [userId, setUserId] = useState<string>('');
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const navigate = useNavigate();
   const { register, handleSubmit, setValue, watch, formState: { errors } } = useForm<ProfileData>();
 
@@ -46,6 +51,7 @@ const Profile = () => {
       navigate("/");
       return;
     }
+    setUserId(session.user.id);
     loadProfile(session.user.id);
   };
 
@@ -72,11 +78,81 @@ const Profile = () => {
         setValue('monthly_income', data.monthly_income?.toString() || '');
         setValue('occupation', data.occupation || '');
         setProfileCompleted(data.profile_completed || false);
+        setAvatarUrl(data.avatar_url || null);
       }
     } catch (error: any) {
       toast.error("Failed to load profile");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const uploadAvatar = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    try {
+      setUploading(true);
+
+      if (!event.target.files || event.target.files.length === 0) {
+        return;
+      }
+
+      const file = event.target.files[0];
+      const fileExt = file.name.split('.').pop();
+      const filePath = `${userId}/${Math.random()}.${fileExt}`;
+
+      // Delete old avatar if exists
+      if (avatarUrl) {
+        const oldPath = avatarUrl.split('/').slice(-2).join('/');
+        await supabase.storage.from('avatars').remove([oldPath]);
+      }
+
+      const { error: uploadError } = await supabase.storage
+        .from('avatars')
+        .upload(filePath, file, { upsert: true });
+
+      if (uploadError) throw uploadError;
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('avatars')
+        .getPublicUrl(filePath);
+
+      const { error: updateError } = await supabase
+        .from('profiles')
+        .update({ avatar_url: publicUrl })
+        .eq('user_id', userId);
+
+      if (updateError) throw updateError;
+
+      setAvatarUrl(publicUrl);
+      toast.success("Profile photo updated!");
+    } catch (error: any) {
+      toast.error("Error uploading photo");
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const removeAvatar = async () => {
+    try {
+      setUploading(true);
+
+      if (avatarUrl) {
+        const oldPath = avatarUrl.split('/').slice(-2).join('/');
+        await supabase.storage.from('avatars').remove([oldPath]);
+      }
+
+      const { error } = await supabase
+        .from('profiles')
+        .update({ avatar_url: null })
+        .eq('user_id', userId);
+
+      if (error) throw error;
+
+      setAvatarUrl(null);
+      toast.success("Profile photo removed!");
+    } catch (error: any) {
+      toast.error("Error removing photo");
+    } finally {
+      setUploading(false);
     }
   };
 
@@ -144,6 +220,59 @@ const Profile = () => {
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+              {/* Profile Photo */}
+              <div className="space-y-4">
+                <h3 className="text-lg font-semibold">Profile Photo</h3>
+                <div className="flex items-center gap-6">
+                  <Avatar className="h-24 w-24">
+                    <AvatarImage src={avatarUrl || ''} />
+                    <AvatarFallback>
+                      {watch('full_name')?.charAt(0)?.toUpperCase() || 'U'}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div className="flex flex-col gap-2">
+                    <input
+                      ref={fileInputRef}
+                      type="file"
+                      accept="image/*"
+                      onChange={uploadAvatar}
+                      className="hidden"
+                    />
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => fileInputRef.current?.click()}
+                      disabled={uploading}
+                    >
+                      {uploading ? (
+                        <>
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                          Uploading...
+                        </>
+                      ) : (
+                        <>
+                          <Upload className="mr-2 h-4 w-4" />
+                          {avatarUrl ? 'Change Photo' : 'Upload Photo'}
+                        </>
+                      )}
+                    </Button>
+                    {avatarUrl && (
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={removeAvatar}
+                        disabled={uploading}
+                      >
+                        <X className="mr-2 h-4 w-4" />
+                        Remove Photo
+                      </Button>
+                    )}
+                  </div>
+                </div>
+              </div>
+
               {/* Personal Information */}
               <div className="space-y-4">
                 <h3 className="text-lg font-semibold">Personal Information</h3>
