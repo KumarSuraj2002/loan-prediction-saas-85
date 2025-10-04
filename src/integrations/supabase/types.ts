@@ -382,8 +382,12 @@ export type Database = {
       }
       profiles: {
         Row: {
+          aadhar_card_url: string | null
+          aadhar_number: string | null
           address: string | null
+          address_proof_url: string | null
           avatar_url: string | null
+          bank_statement_url: string | null
           city: string | null
           created_at: string
           date_of_birth: string | null
@@ -391,8 +395,11 @@ export type Database = {
           employment_status: string | null
           full_name: string | null
           id: string
+          income_certificate_url: string | null
           monthly_income: number | null
           occupation: string | null
+          pan_card_url: string | null
+          pan_number: string | null
           phone: string | null
           postal_code: string | null
           profile_completed: boolean
@@ -401,8 +408,12 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          aadhar_card_url?: string | null
+          aadhar_number?: string | null
           address?: string | null
+          address_proof_url?: string | null
           avatar_url?: string | null
+          bank_statement_url?: string | null
           city?: string | null
           created_at?: string
           date_of_birth?: string | null
@@ -410,8 +421,11 @@ export type Database = {
           employment_status?: string | null
           full_name?: string | null
           id?: string
+          income_certificate_url?: string | null
           monthly_income?: number | null
           occupation?: string | null
+          pan_card_url?: string | null
+          pan_number?: string | null
           phone?: string | null
           postal_code?: string | null
           profile_completed?: boolean
@@ -420,8 +434,12 @@ export type Database = {
           user_id: string
         }
         Update: {
+          aadhar_card_url?: string | null
+          aadhar_number?: string | null
           address?: string | null
+          address_proof_url?: string | null
           avatar_url?: string | null
+          bank_statement_url?: string | null
           city?: string | null
           created_at?: string
           date_of_birth?: string | null
@@ -429,8 +447,11 @@ export type Database = {
           employment_status?: string | null
           full_name?: string | null
           id?: string
+          income_certificate_url?: string | null
           monthly_income?: number | null
           occupation?: string | null
+          pan_card_url?: string | null
+          pan_number?: string | null
           phone?: string | null
           postal_code?: string | null
           profile_completed?: boolean

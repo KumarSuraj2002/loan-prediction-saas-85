@@ -17,6 +17,8 @@ interface ProfileData {
   full_name: string;
   phone: string;
   date_of_birth: string;
+  pan_number: string;
+  aadhar_number: string;
   address: string;
   city: string;
   state: string;
@@ -35,6 +37,15 @@ const Profile = () => {
   const [uploading, setUploading] = useState(false);
   const [userId, setUserId] = useState<string>('');
   const fileInputRef = useRef<HTMLInputElement>(null);
+  
+  const [documents, setDocuments] = useState({
+    pan_card_url: '',
+    aadhar_card_url: '',
+    income_certificate_url: '',
+    address_proof_url: '',
+    bank_statement_url: ''
+  });
+  const [uploadingDoc, setUploadingDoc] = useState<string | null>(null);
   const navigate = useNavigate();
   const { register, handleSubmit, setValue, watch, formState: { errors } } = useForm<ProfileData>();
 
@@ -69,6 +80,8 @@ const Profile = () => {
         setValue('full_name', data.full_name || '');
         setValue('phone', data.phone || '');
         setValue('date_of_birth', data.date_of_birth || '');
+        setValue('pan_number', data.pan_number || '');
+        setValue('aadhar_number', data.aadhar_number || '');
         setValue('address', data.address || '');
         setValue('city', data.city || '');
         setValue('state', data.state || '');
@@ -79,6 +92,13 @@ const Profile = () => {
         setValue('occupation', data.occupation || '');
         setProfileCompleted(data.profile_completed || false);
         setAvatarUrl(data.avatar_url || null);
+        setDocuments({
+          pan_card_url: data.pan_card_url || '',
+          aadhar_card_url: data.aadhar_card_url || '',
+          income_certificate_url: data.income_certificate_url || '',
+          address_proof_url: data.address_proof_url || '',
+          bank_statement_url: data.bank_statement_url || ''
+        });
       }
     } catch (error: any) {
       toast.error("Failed to load profile");
@@ -156,6 +176,79 @@ const Profile = () => {
     }
   };
 
+  const uploadDocument = async (file: File, docType: string) => {
+    if (!userId) return;
+
+    try {
+      setUploadingDoc(docType);
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${docType}_${Date.now()}.${fileExt}`;
+      const filePath = `${userId}/${fileName}`;
+
+      const oldUrl = documents[docType as keyof typeof documents];
+      if (oldUrl) {
+        const oldPath = oldUrl.split('/').slice(-2).join('/');
+        await supabase.storage.from('user-documents').remove([oldPath]);
+      }
+
+      const { error: uploadError } = await supabase.storage
+        .from('user-documents')
+        .upload(filePath, file);
+
+      if (uploadError) throw uploadError;
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('user-documents')
+        .getPublicUrl(filePath);
+
+      const { error: updateError } = await supabase
+        .from('profiles')
+        .update({ [docType]: publicUrl })
+        .eq('user_id', userId);
+
+      if (updateError) throw updateError;
+
+      setDocuments(prev => ({ ...prev, [docType]: publicUrl }));
+      toast.success("Document uploaded successfully!");
+    } catch (error: any) {
+      toast.error("Failed to upload document");
+    } finally {
+      setUploadingDoc(null);
+    }
+  };
+
+  const removeDocument = async (docType: string) => {
+    if (!userId) return;
+
+    try {
+      setUploadingDoc(docType);
+      const docUrl = documents[docType as keyof typeof documents];
+      if (!docUrl) return;
+
+      const filePath = docUrl.split('/').slice(-2).join('/');
+      
+      const { error: deleteError } = await supabase.storage
+        .from('user-documents')
+        .remove([filePath]);
+
+      if (deleteError) throw deleteError;
+
+      const { error: updateError } = await supabase
+        .from('profiles')
+        .update({ [docType]: null })
+        .eq('user_id', userId);
+
+      if (updateError) throw updateError;
+
+      setDocuments(prev => ({ ...prev, [docType]: '' }));
+      toast.success("Document removed successfully!");
+    } catch (error: any) {
+      toast.error("Failed to remove document");
+    } finally {
+      setUploadingDoc(null);
+    }
+  };
+
   const onSubmit = async (formData: ProfileData) => {
     setSaving(true);
     try {
@@ -169,6 +262,8 @@ const Profile = () => {
         formData.full_name &&
         formData.phone &&
         formData.date_of_birth &&
+        formData.pan_number &&
+        formData.aadhar_number &&
         formData.address &&
         formData.city &&
         formData.state &&
@@ -302,7 +397,7 @@ const Profile = () => {
                     )}
                   </div>
 
-                  <div className="space-y-2">
+                   <div className="space-y-2">
                     <Label htmlFor="date_of_birth">Date of Birth *</Label>
                     <Input
                       id="date_of_birth"
@@ -313,7 +408,95 @@ const Profile = () => {
                       <p className="text-sm text-destructive">{errors.date_of_birth.message}</p>
                     )}
                   </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="pan_number">PAN Card Number *</Label>
+                    <Input
+                      id="pan_number"
+                      {...register("pan_number", { required: "PAN number is required" })}
+                      placeholder="ABCDE1234F"
+                    />
+                    {errors.pan_number && (
+                      <p className="text-sm text-destructive">{errors.pan_number.message}</p>
+                    )}
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="aadhar_number">Aadhar Card Number *</Label>
+                    <Input
+                      id="aadhar_number"
+                      {...register("aadhar_number", { required: "Aadhar number is required" })}
+                      placeholder="1234 5678 9012"
+                    />
+                    {errors.aadhar_number && (
+                      <p className="text-sm text-destructive">{errors.aadhar_number.message}</p>
+                    )}
+                  </div>
                 </div>
+              </div>
+
+              {/* Upload Documents */}
+              <div className="space-y-4">
+                <h3 className="text-lg font-semibold">Upload Documents</h3>
+                
+                {[
+                  { key: 'pan_card_url', label: 'PAN Card', accept: 'image/*,application/pdf' },
+                  { key: 'aadhar_card_url', label: 'Aadhar Card', accept: 'image/*,application/pdf' },
+                  { key: 'income_certificate_url', label: 'Income Certificate', accept: 'image/*,application/pdf' },
+                  { key: 'address_proof_url', label: 'Address Proof', accept: 'image/*,application/pdf' },
+                  { key: 'bank_statement_url', label: 'Bank Statement (Last 3 months)', accept: 'image/*,application/pdf' }
+                ].map(({ key, label, accept }) => (
+                  <div key={key} className="flex items-center justify-between p-4 border rounded-lg">
+                    <div className="flex-1">
+                      <Label className="text-sm font-medium">{label}</Label>
+                      {documents[key as keyof typeof documents] && (
+                        <p className="text-xs text-muted-foreground mt-1">✓ Document uploaded</p>
+                      )}
+                    </div>
+                    <div className="flex gap-2">
+                      {documents[key as keyof typeof documents] ? (
+                        <>
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            onClick={() => window.open(documents[key as keyof typeof documents], '_blank')}
+                          >
+                            View
+                          </Button>
+                          <Button
+                            type="button"
+                            variant="destructive"
+                            size="sm"
+                            onClick={() => removeDocument(key)}
+                            disabled={uploadingDoc === key}
+                          >
+                            {uploadingDoc === key ? "Removing..." : "Remove"}
+                          </Button>
+                        </>
+                      ) : (
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={() => {
+                            const input = document.createElement('input');
+                            input.type = 'file';
+                            input.accept = accept;
+                            input.onchange = (e: any) => {
+                              const file = e.target?.files?.[0];
+                              if (file) uploadDocument(file, key);
+                            };
+                            input.click();
+                          }}
+                          disabled={uploadingDoc === key}
+                        >
+                          {uploadingDoc === key ? "Uploading..." : "Upload"}
+                        </Button>
+                      )}
+                    </div>
+                  </div>
+                ))}
               </div>
 
               {/* Address Information */}
