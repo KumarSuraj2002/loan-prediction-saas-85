@@ -43,12 +43,19 @@ const AdminUsers = () => {
 
   const fetchUsers = async () => {
     try {
+      console.log("👥 Fetching user profiles from Admin Users page...");
+      
       const { data, error } = await supabase
         .from('profiles')
         .select('*')
         .order('created_at', { ascending: false });
 
-      if (error) throw error;
+      if (error) {
+        console.error("❌ Error fetching profiles:", error);
+        throw error;
+      }
+      
+      console.log(`✅ Found ${data?.length || 0} user profiles:`, data);
       
       // Fetch email from auth.users for each profile
       const usersWithEmail = await Promise.all((data || []).map(async (profile) => {
@@ -59,9 +66,10 @@ const AdminUsers = () => {
         };
       }));
       
+      console.log("✅ User profiles with email data:", usersWithEmail);
       setUsers(usersWithEmail);
     } catch (error) {
-      console.error('Error fetching users:', error);
+      console.error('❌ Error fetching users:', error);
       toast.error('Failed to fetch users');
     } finally {
       setLoading(false);

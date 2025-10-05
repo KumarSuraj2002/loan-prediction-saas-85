@@ -258,6 +258,9 @@ const Profile = () => {
         return;
       }
 
+      console.log("📝 Submitting profile update for user:", session.user.id);
+      console.log("Profile data being submitted:", formData);
+
       const isComplete = !!(
         formData.full_name &&
         formData.phone &&
@@ -272,20 +275,33 @@ const Profile = () => {
         formData.monthly_income
       );
 
-      const { error } = await supabase
-        .from('profiles')
-        .update({
-          ...formData,
-          monthly_income: formData.monthly_income ? parseFloat(formData.monthly_income) : null,
-          profile_completed: isComplete
-        })
-        .eq('user_id', session.user.id);
+      const updateData = {
+        ...formData,
+        monthly_income: formData.monthly_income ? parseFloat(formData.monthly_income) : null,
+        profile_completed: isComplete
+      };
 
-      if (error) throw error;
+      console.log("Profile completion status:", isComplete);
+      console.log("Update data payload:", updateData);
+
+      const { data, error } = await supabase
+        .from('profiles')
+        .update(updateData)
+        .eq('user_id', session.user.id)
+        .select();
+
+      if (error) {
+        console.error("❌ Error updating profile:", error);
+        throw error;
+      }
+
+      console.log("✅ Profile updated successfully:", data);
+      console.log("Updated profile should now be visible in Admin -> Users section");
 
       setProfileCompleted(isComplete);
       toast.success(isComplete ? "Profile completed!" : "Profile updated!");
     } catch (error: any) {
+      console.error("❌ Profile update failed:", error);
       toast.error("Failed to update profile");
     } finally {
       setSaving(false);
