@@ -57,17 +57,7 @@ const AdminUsers = () => {
       
       console.log(`✅ Found ${data?.length || 0} user profiles:`, data);
       
-      // Fetch email from auth.users for each profile
-      const usersWithEmail = await Promise.all((data || []).map(async (profile) => {
-        const { data: authData } = await supabase.auth.admin.getUserById(profile.user_id);
-        return {
-          ...profile,
-          email: authData?.user?.email || 'N/A'
-        };
-      }));
-      
-      console.log("✅ User profiles with email data:", usersWithEmail);
-      setUsers(usersWithEmail);
+      setUsers(data || []);
     } catch (error) {
       console.error('❌ Error fetching users:', error);
       toast.error('Failed to fetch users');

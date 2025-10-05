@@ -391,6 +391,7 @@ export type Database = {
           city: string | null
           created_at: string
           date_of_birth: string | null
+          email: string | null
           employer_name: string | null
           employment_status: string | null
           full_name: string | null
@@ -417,6 +418,7 @@ export type Database = {
           city?: string | null
           created_at?: string
           date_of_birth?: string | null
+          email?: string | null
           employer_name?: string | null
           employment_status?: string | null
           full_name?: string | null
@@ -443,6 +445,7 @@ export type Database = {
           city?: string | null
           created_at?: string
           date_of_birth?: string | null
+          email?: string | null
           employer_name?: string | null
           employment_status?: string | null
           full_name?: string | null
