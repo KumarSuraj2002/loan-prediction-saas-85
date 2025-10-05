@@ -146,8 +146,11 @@ const AdminUsers = () => {
   return (
     <div className="space-y-6">
       <Card>
-        <CardHeader>
+        <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle>User Profiles</CardTitle>
+          <Button onClick={fetchUsers} variant="outline" size="sm">
+            Refresh Data
+          </Button>
         </CardHeader>
         <CardContent>
           <Table>

@@ -68,15 +68,40 @@ const Profile = () => {
 
   const loadProfile = async (userId: string) => {
     try {
+      console.log("🔍 Loading profile for user:", userId);
+      
       const { data, error } = await supabase
         .from('profiles')
         .select('*')
         .eq('user_id', userId)
         .single();
 
-      if (error) throw error;
+      if (error) {
+        console.error("❌ Error loading profile:", error);
+        
+        // If no profile exists, create one
+        if (error.code === 'PGRST116') {
+          console.log("📝 No profile found, creating new profile...");
+          const { data: newProfile, error: insertError } = await supabase
+            .from('profiles')
+            .insert({ user_id: userId })
+            .select()
+            .single();
+          
+          if (insertError) {
+            console.error("❌ Error creating profile:", insertError);
+            throw insertError;
+          }
+          
+          console.log("✅ New profile created:", newProfile);
+          return;
+        }
+        
+        throw error;
+      }
 
       if (data) {
+        console.log("✅ Profile loaded successfully:", data);
         setValue('full_name', data.full_name || '');
         setValue('phone', data.phone || '');
         setValue('date_of_birth', data.date_of_birth || '');
@@ -101,6 +126,7 @@ const Profile = () => {
         });
       }
     } catch (error: any) {
+      console.error("❌ Failed to load profile:", error);
       toast.error("Failed to load profile");
     } finally {
       setLoading(false);
@@ -284,15 +310,36 @@ const Profile = () => {
       console.log("Profile completion status:", isComplete);
       console.log("Update data payload:", updateData);
 
-      const { data, error } = await supabase
+      const { data, error, status, statusText } = await supabase
         .from('profiles')
         .update(updateData)
         .eq('user_id', session.user.id)
         .select();
 
+      console.log("📊 Update response:", { data, error, status, statusText });
+
       if (error) {
         console.error("❌ Error updating profile:", error);
+        console.error("Error details:", {
+          message: error.message,
+          details: error.details,
+          hint: error.hint,
+          code: error.code
+        });
         throw error;
+      }
+
+      if (!data || data.length === 0) {
+        console.error("⚠️ Update succeeded but no data returned - possible RLS issue");
+        console.log("Attempting to verify update by re-fetching...");
+        
+        const { data: verifyData, error: verifyError } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('user_id', session.user.id)
+          .single();
+          
+        console.log("Verification result:", { verifyData, verifyError });
       }
 
       console.log("✅ Profile updated successfully:", data);
