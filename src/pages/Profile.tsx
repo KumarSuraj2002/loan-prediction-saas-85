@@ -223,18 +223,15 @@ const Profile = () => {
 
       if (uploadError) throw uploadError;
 
-      const { data: { publicUrl } } = supabase.storage
-        .from('user-documents')
-        .getPublicUrl(filePath);
-
+      // Store the file path instead of public URL for private bucket
       const { error: updateError } = await supabase
         .from('profiles')
-        .update({ [docType]: publicUrl })
+        .update({ [docType]: filePath })
         .eq('user_id', userId);
 
       if (updateError) throw updateError;
 
-      setDocuments(prev => ({ ...prev, [docType]: publicUrl }));
+      setDocuments(prev => ({ ...prev, [docType]: filePath }));
       toast.success("Document uploaded successfully!");
     } catch (error: any) {
       toast.error("Failed to upload document");
@@ -523,7 +520,21 @@ const Profile = () => {
                             type="button"
                             variant="outline"
                             size="sm"
-                            onClick={() => window.open(documents[key as keyof typeof documents], '_blank')}
+                            onClick={async () => {
+                              const filePath = documents[key as keyof typeof documents];
+                              const { data, error } = await supabase.storage
+                                .from('user-documents')
+                                .createSignedUrl(filePath, 60);
+                              
+                              if (error) {
+                                toast.error("Failed to load document");
+                                return;
+                              }
+                              
+                              if (data?.signedUrl) {
+                                window.open(data.signedUrl, '_blank');
+                              }
+                            }}
                           >
                             View
                           </Button>
