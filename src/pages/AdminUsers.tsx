@@ -128,53 +128,36 @@ const AdminUsers = () => {
     }
   };
 
-  const viewDocument = async (filePath: string, docName: string) => {
-    if (!filePath) {
-      toast.error('Document not uploaded');
+  const viewDocument = async (docUrl: string) => {
+    const { data, error } = await supabase.storage
+      .from('user-documents')
+      .createSignedUrl(docUrl, 60);
+    
+    if (error) {
+      toast.error("Failed to load document");
       return;
     }
-
-    try {
-      const { data, error } = await supabase.storage
-        .from('user-documents')
-        .createSignedUrl(filePath, 300); // 5 minutes expiry
-
-      if (error) throw error;
-
-      if (data?.signedUrl) {
-        window.open(data.signedUrl, '_blank');
-      }
-    } catch (error) {
-      console.error('Error viewing document:', error);
-      toast.error('Failed to load document');
+    
+    if (data?.signedUrl) {
+      window.open(data.signedUrl, '_blank');
     }
   };
 
-  const downloadDocument = async (filePath: string, docName: string) => {
-    if (!filePath) {
-      toast.error('Document not uploaded');
+  const downloadDocument = async (docUrl: string, label: string) => {
+    const { data, error } = await supabase.storage
+      .from('user-documents')
+      .createSignedUrl(docUrl, 60);
+    
+    if (error) {
+      toast.error("Failed to download document");
       return;
     }
-
-    try {
-      const { data, error } = await supabase.storage
-        .from('user-documents')
-        .download(filePath);
-
-      if (error) throw error;
-
-      const url = URL.createObjectURL(data);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = docName;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
-      toast.success('Document downloaded');
-    } catch (error) {
-      console.error('Error downloading document:', error);
-      toast.error('Failed to download document');
+    
+    if (data?.signedUrl) {
+      const link = document.createElement('a');
+      link.href = data.signedUrl;
+      link.download = `${label}.pdf`;
+      link.click();
     }
   };
 
@@ -340,49 +323,56 @@ const AdminUsers = () => {
                 </div>
               </div>
 
-              <div className="space-y-4 pt-4 border-t">
-                <Label className="text-base font-semibold">Uploaded Documents</Label>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label>PAN Number</Label>
+                  <p className="text-sm">{selectedUser.pan_number || 'N/A'}</p>
+                </div>
+                <div>
+                  <Label>Aadhar Number</Label>
+                  <p className="text-sm">{selectedUser.aadhar_number || 'N/A'}</p>
+                </div>
+              </div>
+
+              {/* Documents Section */}
+              <div className="space-y-3 pt-4 border-t">
+                <h4 className="font-semibold">Uploaded Documents</h4>
                 {[
-                  { key: 'pan_card_url', label: 'PAN Card', number: selectedUser.pan_number },
-                  { key: 'aadhar_card_url', label: 'Aadhar Card', number: selectedUser.aadhar_number },
-                  { key: 'income_certificate_url', label: 'Income Certificate', number: null },
-                  { key: 'address_proof_url', label: 'Address Proof', number: null },
-                  { key: 'bank_statement_url', label: 'Bank Statement', number: null }
-                ].map(({ key, label, number }) => {
-                  const docPath = selectedUser[key as keyof UserProfile] as string | null;
+                  { key: 'pan_card_url', label: 'PAN Card' },
+                  { key: 'aadhar_card_url', label: 'Aadhar Card' },
+                  { key: 'income_certificate_url', label: 'Income Certificate' },
+                  { key: 'address_proof_url', label: 'Address Proof' },
+                  { key: 'bank_statement_url', label: 'Bank Statement' }
+                ].map(({ key, label }) => {
+                  const docUrl = selectedUser[key as keyof UserProfile];
                   return (
-                    <div key={key} className="flex items-center justify-between p-3 border rounded-lg">
+                    <div key={key} className="flex items-center justify-between p-3 bg-muted rounded-lg">
                       <div className="flex items-center gap-2">
-                        <FileText className="h-4 w-4 text-muted-foreground" />
-                        <div>
-                          <p className="text-sm font-medium">{label}</p>
-                          {number && <p className="text-xs text-muted-foreground">{number}</p>}
+                        <FileText className="h-4 w-4" />
+                        <span className="text-sm font-medium">{label}</span>
+                      </div>
+                      {docUrl ? (
+                        <div className="flex gap-2">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => viewDocument(docUrl as string)}
+                          >
+                            <Eye className="h-3 w-3 mr-1" />
+                            View
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => downloadDocument(docUrl as string, label)}
+                          >
+                            <Download className="h-3 w-3 mr-1" />
+                            Download
+                          </Button>
                         </div>
-                      </div>
-                      <div className="flex gap-2">
-                        {docPath ? (
-                          <>
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => viewDocument(docPath, label)}
-                            >
-                              <Eye className="h-4 w-4 mr-1" />
-                              View
-                            </Button>
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => downloadDocument(docPath, `${label}.pdf`)}
-                            >
-                              <Download className="h-4 w-4 mr-1" />
-                              Download
-                            </Button>
-                          </>
-                        ) : (
-                          <Badge variant="outline">Not Uploaded</Badge>
-                        )}
-                      </div>
+                      ) : (
+                        <Badge variant="outline">Not uploaded</Badge>
+                      )}
                     </div>
                   );
                 })}
