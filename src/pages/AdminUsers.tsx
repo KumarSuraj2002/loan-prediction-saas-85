@@ -9,7 +9,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Eye, Edit, Trash2 } from 'lucide-react';
+import { Eye, Edit, Trash2, Download, FileText } from 'lucide-react';
 import { toast } from 'sonner';
 
 interface UserProfile {
@@ -31,6 +31,13 @@ interface UserProfile {
   created_at: string;
   updated_at: string;
   email?: string;
+  pan_card_url?: string | null;
+  aadhar_card_url?: string | null;
+  income_certificate_url?: string | null;
+  address_proof_url?: string | null;
+  bank_statement_url?: string | null;
+  pan_number?: string | null;
+  aadhar_number?: string | null;
 }
 
 const AdminUsers = () => {
@@ -118,6 +125,56 @@ const AdminUsers = () => {
     } catch (error) {
       console.error('Error deleting user:', error);
       toast.error('Failed to delete user');
+    }
+  };
+
+  const viewDocument = async (filePath: string, docName: string) => {
+    if (!filePath) {
+      toast.error('Document not uploaded');
+      return;
+    }
+
+    try {
+      const { data, error } = await supabase.storage
+        .from('user-documents')
+        .createSignedUrl(filePath, 300); // 5 minutes expiry
+
+      if (error) throw error;
+
+      if (data?.signedUrl) {
+        window.open(data.signedUrl, '_blank');
+      }
+    } catch (error) {
+      console.error('Error viewing document:', error);
+      toast.error('Failed to load document');
+    }
+  };
+
+  const downloadDocument = async (filePath: string, docName: string) => {
+    if (!filePath) {
+      toast.error('Document not uploaded');
+      return;
+    }
+
+    try {
+      const { data, error } = await supabase.storage
+        .from('user-documents')
+        .download(filePath);
+
+      if (error) throw error;
+
+      const url = URL.createObjectURL(data);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = docName;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      toast.success('Document downloaded');
+    } catch (error) {
+      console.error('Error downloading document:', error);
+      toast.error('Failed to download document');
     }
   };
 
@@ -281,6 +338,54 @@ const AdminUsers = () => {
                   <Label>Monthly Income</Label>
                   <p className="text-sm">{selectedUser.monthly_income ? `₹${selectedUser.monthly_income.toLocaleString()}` : 'N/A'}</p>
                 </div>
+              </div>
+
+              <div className="space-y-4 pt-4 border-t">
+                <Label className="text-base font-semibold">Uploaded Documents</Label>
+                {[
+                  { key: 'pan_card_url', label: 'PAN Card', number: selectedUser.pan_number },
+                  { key: 'aadhar_card_url', label: 'Aadhar Card', number: selectedUser.aadhar_number },
+                  { key: 'income_certificate_url', label: 'Income Certificate', number: null },
+                  { key: 'address_proof_url', label: 'Address Proof', number: null },
+                  { key: 'bank_statement_url', label: 'Bank Statement', number: null }
+                ].map(({ key, label, number }) => {
+                  const docPath = selectedUser[key as keyof UserProfile] as string | null;
+                  return (
+                    <div key={key} className="flex items-center justify-between p-3 border rounded-lg">
+                      <div className="flex items-center gap-2">
+                        <FileText className="h-4 w-4 text-muted-foreground" />
+                        <div>
+                          <p className="text-sm font-medium">{label}</p>
+                          {number && <p className="text-xs text-muted-foreground">{number}</p>}
+                        </div>
+                      </div>
+                      <div className="flex gap-2">
+                        {docPath ? (
+                          <>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => viewDocument(docPath, label)}
+                            >
+                              <Eye className="h-4 w-4 mr-1" />
+                              View
+                            </Button>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => downloadDocument(docPath, `${label}.pdf`)}
+                            >
+                              <Download className="h-4 w-4 mr-1" />
+                              Download
+                            </Button>
+                          </>
+                        ) : (
+                          <Badge variant="outline">Not Uploaded</Badge>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
 
               <div className="grid grid-cols-2 gap-4 pt-4 border-t">
