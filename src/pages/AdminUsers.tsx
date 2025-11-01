@@ -46,6 +46,8 @@ const AdminUsers = () => {
   const [selectedUser, setSelectedUser] = useState<UserProfile | null>(null);
   const [isViewDialogOpen, setIsViewDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [isDocumentDialogOpen, setIsDocumentDialogOpen] = useState(false);
+  const [viewDocumentUrl, setViewDocumentUrl] = useState<string | null>(null);
   const [editForm, setEditForm] = useState<Partial<UserProfile>>({});
 
   const fetchUsers = async () => {
@@ -152,7 +154,8 @@ const AdminUsers = () => {
       const fullSignedUrl = data.signedUrl.startsWith('http') 
         ? data.signedUrl 
         : `https://qrivpumpvxkroiwidulq.supabase.co/storage/v1${data.signedUrl}`;
-      window.open(fullSignedUrl, '_blank');
+      setViewDocumentUrl(fullSignedUrl);
+      setIsDocumentDialogOpen(true);
     }
   };
 
@@ -544,6 +547,24 @@ const AdminUsers = () => {
                 Cancel
               </Button>
             </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Document Viewer Dialog */}
+      <Dialog open={isDocumentDialogOpen} onOpenChange={setIsDocumentDialogOpen}>
+        <DialogContent className="max-w-4xl h-[80vh]">
+          <DialogHeader>
+            <DialogTitle>Document Preview</DialogTitle>
+          </DialogHeader>
+          <div className="flex-1 h-full">
+            {viewDocumentUrl && (
+              <iframe
+                src={viewDocumentUrl}
+                className="w-full h-full border-0"
+                title="Document Preview"
+              />
+            )}
           </div>
         </DialogContent>
       </Dialog>

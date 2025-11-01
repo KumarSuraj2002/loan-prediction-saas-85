@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import Navbar from "@/components/Navbar";
@@ -36,6 +37,8 @@ const Profile = () => {
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
   const [userId, setUserId] = useState<string>('');
+  const [viewDocumentUrl, setViewDocumentUrl] = useState<string | null>(null);
+  const [isDocumentDialogOpen, setIsDocumentDialogOpen] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   
   const [documents, setDocuments] = useState({
@@ -545,7 +548,8 @@ const Profile = () => {
                                 const fullSignedUrl = data.signedUrl.startsWith('http') 
                                   ? data.signedUrl 
                                   : `https://qrivpumpvxkroiwidulq.supabase.co/storage/v1${data.signedUrl}`;
-                                window.open(fullSignedUrl, '_blank');
+                                setViewDocumentUrl(fullSignedUrl);
+                                setIsDocumentDialogOpen(true);
                               }
                             }}
                           >
@@ -716,6 +720,25 @@ const Profile = () => {
           </CardContent>
         </Card>
       </main>
+
+      {/* Document Viewer Dialog */}
+      <Dialog open={isDocumentDialogOpen} onOpenChange={setIsDocumentDialogOpen}>
+        <DialogContent className="max-w-4xl h-[80vh]">
+          <DialogHeader>
+            <DialogTitle>Document Preview</DialogTitle>
+          </DialogHeader>
+          <div className="flex-1 h-full">
+            {viewDocumentUrl && (
+              <iframe
+                src={viewDocumentUrl}
+                className="w-full h-full border-0"
+                title="Document Preview"
+              />
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
+
       <Footer />
     </div>
   );
