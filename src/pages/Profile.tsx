@@ -548,8 +548,9 @@ const Profile = () => {
                                 const fullSignedUrl = data.signedUrl.startsWith('http') 
                                   ? data.signedUrl 
                                   : `https://qrivpumpvxkroiwidulq.supabase.co/storage/v1${data.signedUrl}`;
-                                setViewDocumentUrl(fullSignedUrl);
-                                setIsDocumentDialogOpen(true);
+                                
+                                // Open in new tab with PDF viewer - Chrome blocks iframes for security
+                                window.open(fullSignedUrl, '_blank', 'noopener,noreferrer');
                               }
                             }}
                           >
