@@ -541,7 +541,11 @@ const Profile = () => {
                               }
                               
                               if (data?.signedUrl) {
-                                window.open(data.signedUrl, '_blank');
+                                // Construct full URL if signedUrl is relative
+                                const fullSignedUrl = data.signedUrl.startsWith('http') 
+                                  ? data.signedUrl 
+                                  : `https://qrivpumpvxkroiwidulq.supabase.co/storage/v1${data.signedUrl}`;
+                                window.open(fullSignedUrl, '_blank');
                               }
                             }}
                           >

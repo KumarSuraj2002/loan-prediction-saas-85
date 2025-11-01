@@ -148,7 +148,11 @@ const AdminUsers = () => {
     }
     
     if (data?.signedUrl) {
-      window.open(data.signedUrl, '_blank');
+      // Construct full URL if signedUrl is relative
+      const fullSignedUrl = data.signedUrl.startsWith('http') 
+        ? data.signedUrl 
+        : `https://qrivpumpvxkroiwidulq.supabase.co/storage/v1${data.signedUrl}`;
+      window.open(fullSignedUrl, '_blank');
     }
   };
 
@@ -172,8 +176,12 @@ const AdminUsers = () => {
     }
     
     if (data?.signedUrl) {
+      // Construct full URL if signedUrl is relative
+      const fullSignedUrl = data.signedUrl.startsWith('http') 
+        ? data.signedUrl 
+        : `https://qrivpumpvxkroiwidulq.supabase.co/storage/v1${data.signedUrl}`;
       const link = document.createElement('a');
-      link.href = data.signedUrl;
+      link.href = fullSignedUrl;
       link.download = `${label}.pdf`;
       link.click();
     }
