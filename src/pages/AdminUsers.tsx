@@ -129,11 +129,20 @@ const AdminUsers = () => {
   };
 
   const viewDocument = async (docUrl: string) => {
+    // Extract file path from URL (everything after /user-documents/)
+    const filePath = docUrl.split('/user-documents/')[1]?.split('?')[0];
+    
+    if (!filePath) {
+      toast.error("Invalid document URL");
+      return;
+    }
+    
     const { data, error } = await supabase.storage
       .from('user-documents')
-      .createSignedUrl(docUrl, 60);
+      .createSignedUrl(filePath, 60);
     
     if (error) {
+      console.error("Error creating signed URL:", error);
       toast.error("Failed to load document");
       return;
     }
@@ -144,11 +153,20 @@ const AdminUsers = () => {
   };
 
   const downloadDocument = async (docUrl: string, label: string) => {
+    // Extract file path from URL (everything after /user-documents/)
+    const filePath = docUrl.split('/user-documents/')[1]?.split('?')[0];
+    
+    if (!filePath) {
+      toast.error("Invalid document URL");
+      return;
+    }
+    
     const { data, error } = await supabase.storage
       .from('user-documents')
-      .createSignedUrl(docUrl, 60);
+      .createSignedUrl(filePath, 60);
     
     if (error) {
+      console.error("Error creating signed URL:", error);
       toast.error("Failed to download document");
       return;
     }

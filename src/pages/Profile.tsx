@@ -521,12 +521,21 @@ const Profile = () => {
                             variant="outline"
                             size="sm"
                             onClick={async () => {
-                              const filePath = documents[key as keyof typeof documents];
+                              const fullUrl = documents[key as keyof typeof documents];
+                              // Extract file path from URL (everything after /user-documents/)
+                              const filePath = fullUrl.split('/user-documents/')[1]?.split('?')[0];
+                              
+                              if (!filePath) {
+                                toast.error("Invalid document URL");
+                                return;
+                              }
+                              
                               const { data, error } = await supabase.storage
                                 .from('user-documents')
                                 .createSignedUrl(filePath, 60);
                               
                               if (error) {
+                                console.error("Error creating signed URL:", error);
                                 toast.error("Failed to load document");
                                 return;
                               }
