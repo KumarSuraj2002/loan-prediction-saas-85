@@ -364,23 +364,23 @@ const Profile = () => {
   return (
     <div className="min-h-screen flex flex-col">
       <Navbar />
-      <main className="flex-1 container max-w-4xl mx-auto px-4 py-8">
+      <main className="flex-1 container max-w-4xl mx-auto px-4 py-6 sm:py-8">
         <Card>
-          <CardHeader>
-            <CardTitle>My Profile</CardTitle>
+          <CardHeader className="p-4 sm:p-6">
+            <CardTitle className="text-xl sm:text-2xl">My Profile</CardTitle>
             <CardDescription>
               {profileCompleted 
                 ? "Your profile is complete. You can update your information anytime."
                 : "Complete your profile to apply for loans and access all features."}
             </CardDescription>
           </CardHeader>
-          <CardContent>
+          <CardContent className="p-4 sm:p-6">
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
               {/* Profile Photo */}
               <div className="space-y-4">
-                <h3 className="text-lg font-semibold">Profile Photo</h3>
-                <div className="flex items-center gap-6">
-                  <Avatar className="h-24 w-24">
+                <h3 className="text-base sm:text-lg font-semibold">Profile Photo</h3>
+                <div className="flex flex-col sm:flex-row items-center gap-4 sm:gap-6">
+                  <Avatar className="h-20 w-20 sm:h-24 sm:w-24">
                     <AvatarImage src={avatarUrl || ''} />
                     <AvatarFallback>
                       {watch('full_name')?.charAt(0)?.toUpperCase() || 'U'}
@@ -431,7 +431,7 @@ const Profile = () => {
 
               {/* Personal Information */}
               <div className="space-y-4">
-                <h3 className="text-lg font-semibold">Personal Information</h3>
+                <h3 className="text-base sm:text-lg font-semibold">Personal Information</h3>
                 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2">

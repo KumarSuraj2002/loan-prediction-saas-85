@@ -202,26 +202,27 @@ const AdminUsers = () => {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       <Card>
-        <CardHeader className="flex flex-row items-center justify-between">
-          <CardTitle>User Profiles</CardTitle>
+        <CardHeader className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 p-4 sm:p-6">
+          <CardTitle className="text-lg sm:text-xl">User Profiles</CardTitle>
           <Button onClick={fetchUsers} variant="outline" size="sm">
             Refresh Data
           </Button>
         </CardHeader>
-        <CardContent>
-          <Table>
+        <CardContent className="p-0 sm:p-6">
+          <div className="overflow-x-auto">
+            <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Avatar</TableHead>
-                <TableHead>Name</TableHead>
-                <TableHead>Email</TableHead>
-                <TableHead>Phone</TableHead>
-                <TableHead>City</TableHead>
-                <TableHead>Employment</TableHead>
-                <TableHead>Profile Status</TableHead>
-                <TableHead>Actions</TableHead>
+                <TableHead className="min-w-[60px]">Avatar</TableHead>
+                <TableHead className="min-w-[150px]">Name</TableHead>
+                <TableHead className="min-w-[200px]">Email</TableHead>
+                <TableHead className="min-w-[120px]">Phone</TableHead>
+                <TableHead className="min-w-[100px]">City</TableHead>
+                <TableHead className="min-w-[120px]">Employment</TableHead>
+                <TableHead className="min-w-[120px]">Profile Status</TableHead>
+                <TableHead className="min-w-[140px]">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -240,7 +241,7 @@ const AdminUsers = () => {
                   <TableCell>{user.employment_status || 'N/A'}</TableCell>
                   <TableCell>{getCompletionBadge(user.profile_completed)}</TableCell>
                   <TableCell>
-                    <div className="flex space-x-2">
+                    <div className="flex flex-nowrap gap-1 sm:gap-2">
                       <Button
                         variant="outline"
                         size="sm"
@@ -248,8 +249,9 @@ const AdminUsers = () => {
                           setSelectedUser(user);
                           setIsViewDialogOpen(true);
                         }}
+                        className="h-8 w-8 sm:h-9 sm:w-9 p-0"
                       >
-                        <Eye className="h-4 w-4" />
+                        <Eye className="h-3 w-3 sm:h-4 sm:w-4" />
                       </Button>
                       <Button
                         variant="outline"
@@ -259,15 +261,17 @@ const AdminUsers = () => {
                           setEditForm(user);
                           setIsEditDialogOpen(true);
                         }}
+                        className="h-8 w-8 sm:h-9 sm:w-9 p-0"
                       >
-                        <Edit className="h-4 w-4" />
+                        <Edit className="h-3 w-3 sm:h-4 sm:w-4" />
                       </Button>
                       <Button
                         variant="outline"
                         size="sm"
                         onClick={() => deleteUser(user.id)}
+                        className="h-8 w-8 sm:h-9 sm:w-9 p-0"
                       >
-                        <Trash2 className="h-4 w-4" />
+                        <Trash2 className="h-3 w-3 sm:h-4 sm:w-4" />
                       </Button>
                     </div>
                   </TableCell>
@@ -275,6 +279,7 @@ const AdminUsers = () => {
               ))}
             </TableBody>
           </Table>
+          </div>
         </CardContent>
       </Card>
 
@@ -285,8 +290,8 @@ const AdminUsers = () => {
             <DialogTitle>User Profile Details</DialogTitle>
           </DialogHeader>
           {selectedUser && (
-            <div className="space-y-4">
-              <div className="flex items-center gap-4">
+            <div className="space-y-4 p-4 sm:p-0">
+              <div className="flex flex-col sm:flex-row items-center gap-4">
                 <Avatar className="h-20 w-20">
                   <AvatarImage src={selectedUser.avatar_url || undefined} alt={selectedUser.full_name || 'User'} />
                   <AvatarFallback className="text-2xl">{selectedUser.full_name?.charAt(0) || 'U'}</AvatarFallback>
@@ -298,7 +303,7 @@ const AdminUsers = () => {
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <Label>Phone</Label>
                   <p className="text-sm">{selectedUser.phone || 'N/A'}</p>
@@ -314,7 +319,7 @@ const AdminUsers = () => {
                 <p className="text-sm">{selectedUser.address || 'N/A'}</p>
               </div>
 
-              <div className="grid grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <div>
                   <Label>City</Label>
                   <p className="text-sm">{selectedUser.city || 'N/A'}</p>

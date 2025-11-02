@@ -135,10 +135,10 @@ const AdminBankPartners = () => {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       <Card>
-        <CardHeader className="flex flex-row items-center justify-between">
-          <CardTitle>Bank Partners</CardTitle>
+        <CardHeader className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 p-4 sm:p-6">
+          <CardTitle className="text-lg sm:text-xl">Bank Partners</CardTitle>
           <Button onClick={() => {
             setEditForm({
               rating: 0,
@@ -149,21 +149,22 @@ const AdminBankPartners = () => {
             });
             setSelectedBank(null);
             setIsAddDialogOpen(true);
-          }}>
+          }} className="w-full sm:w-auto">
             <Plus className="h-4 w-4 mr-2" />
             Add Bank
           </Button>
         </CardHeader>
-        <CardContent>
-          <Table>
+        <CardContent className="p-0 sm:p-6">
+          <div className="overflow-x-auto">
+            <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Bank Name</TableHead>
-                <TableHead>Logo</TableHead>
-                <TableHead>Rating</TableHead>
-                <TableHead>Account Types</TableHead>
-                <TableHead>Locations</TableHead>
-                <TableHead>Actions</TableHead>
+                <TableHead className="min-w-[150px]">Bank Name</TableHead>
+                <TableHead className="min-w-[80px]">Logo</TableHead>
+                <TableHead className="min-w-[120px]">Rating</TableHead>
+                <TableHead className="min-w-[180px]">Account Types</TableHead>
+                <TableHead className="min-w-[150px]">Locations</TableHead>
+                <TableHead className="min-w-[120px]">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -208,7 +209,7 @@ const AdminBankPartners = () => {
                     </div>
                   </TableCell>
                   <TableCell>
-                    <div className="flex space-x-2">
+                    <div className="flex flex-nowrap gap-1 sm:gap-2">
                       <Button
                         variant="outline"
                         size="sm"
@@ -217,15 +218,17 @@ const AdminBankPartners = () => {
                           setEditForm(bank);
                           setIsEditDialogOpen(true);
                         }}
+                        className="h-8 w-8 sm:h-9 sm:w-9 p-0"
                       >
-                        <Edit className="h-4 w-4" />
+                        <Edit className="h-3 w-3 sm:h-4 sm:w-4" />
                       </Button>
                       <Button
                         variant="outline"
                         size="sm"
                         onClick={() => deleteBank(bank.id)}
+                        className="h-8 w-8 sm:h-9 sm:w-9 p-0"
                       >
-                        <Trash2 className="h-4 w-4" />
+                        <Trash2 className="h-3 w-3 sm:h-4 sm:w-4" />
                       </Button>
                     </div>
                   </TableCell>
@@ -233,6 +236,7 @@ const AdminBankPartners = () => {
               ))}
             </TableBody>
           </Table>
+          </div>
         </CardContent>
       </Card>
 
@@ -249,8 +253,8 @@ const AdminBankPartners = () => {
           <DialogHeader>
             <DialogTitle>{selectedBank ? 'Edit Bank' : 'Add Bank'}</DialogTitle>
           </DialogHeader>
-          <div className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
+          <div className="space-y-4 p-4 sm:p-0">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <Label>Bank Name</Label>
                 <Input
@@ -316,7 +320,7 @@ const AdminBankPartners = () => {
             </div>
             <div>
               <Label>Interest Rates (%)</Label>
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <Label className="text-sm">Savings</Label>
                   <Input
@@ -359,8 +363,8 @@ const AdminBankPartners = () => {
                 </div>
               </div>
             </div>
-            <div className="flex space-x-2">
-              <Button onClick={saveBank}>
+            <div className="flex flex-col sm:flex-row gap-2">
+              <Button onClick={saveBank} className="w-full sm:w-auto">
                 {selectedBank ? 'Update' : 'Add'} Bank
               </Button>
               <Button variant="outline" onClick={() => {
@@ -368,7 +372,7 @@ const AdminBankPartners = () => {
                 setIsAddDialogOpen(false);
                 setEditForm({});
                 setSelectedBank(null);
-              }}>
+              }} className="w-full sm:w-auto">
                 Cancel
               </Button>
             </div>

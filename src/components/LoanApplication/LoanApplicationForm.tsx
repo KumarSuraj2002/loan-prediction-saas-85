@@ -79,24 +79,24 @@ const LoanApplicationForm: React.FC<LoanApplicationFormProps> = ({ loanType }) =
   const isLastStep = currentStep === totalSteps - 1;
 
   return (
-    <div className="container mx-auto px-4 py-10">
-      <div className="max-w-3xl mx-auto bg-white p-8 rounded-lg shadow-sm">
-        <h1 className="text-3xl font-bold mb-2">{getLoanTypeLabel(loanTypeKey)}</h1>
-        <div className="mb-8 text-sm text-muted-foreground">
+    <div className="container mx-auto px-4 py-6 sm:py-10">
+      <div className="max-w-3xl mx-auto bg-white p-4 sm:p-8 rounded-lg shadow-sm">
+        <h1 className="text-2xl sm:text-3xl font-bold mb-2">{getLoanTypeLabel(loanTypeKey)}</h1>
+        <div className="mb-6 sm:mb-8 text-sm text-muted-foreground">
           Step {currentStep + 1} of {totalSteps}
         </div>
 
-        <Card className="p-6 mb-8">
-          <h3 className="text-lg font-medium mb-4">{currentQuestion.question}</h3>
+        <Card className="p-4 sm:p-6 mb-6 sm:mb-8">
+          <h3 className="text-base sm:text-lg font-medium mb-4">{currentQuestion.question}</h3>
           
           {renderQuestionInput(currentQuestion, handleInputChange, formData)}
         </Card>
 
-        <div className="flex justify-between mt-8">
+        <div className="flex flex-col sm:flex-row justify-between gap-3 sm:gap-0 mt-6 sm:mt-8">
           <Button 
             variant="outline" 
             onClick={handlePrevious}
-            className="flex items-center gap-2"
+            className="flex items-center justify-center gap-2 w-full sm:w-auto"
           >
             <ArrowLeft size={16} />
             Back
@@ -106,7 +106,7 @@ const LoanApplicationForm: React.FC<LoanApplicationFormProps> = ({ loanType }) =
             <Button 
               variant="default" 
               onClick={handleSubmit}
-              className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700"
+              className="flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 w-full sm:w-auto"
             >
               Submit
               <ArrowRight size={16} />
@@ -115,7 +115,7 @@ const LoanApplicationForm: React.FC<LoanApplicationFormProps> = ({ loanType }) =
             <Button 
               variant="default" 
               onClick={handleNext}
-              className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700"
+              className="flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 w-full sm:w-auto"
             >
               Next
               <ArrowRight size={16} />
@@ -175,15 +175,15 @@ function renderQuestionInput(question: any, handleChange: any, formData: any) {
     case 'radio':
       return (
         <div className="space-y-3">
-          <div className="font-medium">{question.label}</div>
+          <div className="font-medium text-sm sm:text-base">{question.label}</div>
           <RadioGroup 
             value={value}
             onValueChange={(value) => handleChange(question.id, value)}
           >
             {question.options.map((option: any) => (
-              <div key={option.value} className="flex items-center space-x-2">
+              <div key={option.value} className="flex items-center space-x-2 py-1">
                 <RadioGroupItem value={option.value} id={`${question.id}-${option.value}`} />
-                <Label htmlFor={`${question.id}-${option.value}`}>{option.label}</Label>
+                <Label htmlFor={`${question.id}-${option.value}`} className="text-sm sm:text-base cursor-pointer">{option.label}</Label>
               </div>
             ))}
           </RadioGroup>

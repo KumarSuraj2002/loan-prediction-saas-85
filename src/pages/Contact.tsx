@@ -186,18 +186,19 @@ const Contact = () => {
                     <form onSubmit={handleSubmit} className="space-y-6">
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div className="space-y-2">
-                          <Label htmlFor="name">Your Name</Label>
+                          <Label htmlFor="name" className="text-sm sm:text-base">Your Name</Label>
                           <Input 
                             id="name" 
                             name="name" 
                             placeholder="John Doe" 
                             value={formData.name} 
                             onChange={handleChange} 
-                            required 
+                            required
+                            className="text-sm sm:text-base"
                           />
                         </div>
                         <div className="space-y-2">
-                          <Label htmlFor="email">Email Address</Label>
+                          <Label htmlFor="email" className="text-sm sm:text-base">Email Address</Label>
                           <Input 
                             id="email" 
                             name="email" 
@@ -205,13 +206,14 @@ const Contact = () => {
                             placeholder="john@example.com" 
                             value={formData.email} 
                             onChange={handleChange} 
-                            required 
+                            required
+                            className="text-sm sm:text-base"
                           />
                         </div>
                       </div>
                       
                       <div className="space-y-2">
-                        <Label htmlFor="subject">Subject</Label>
+                        <Label htmlFor="subject" className="text-sm sm:text-base">Subject</Label>
                         <Select value={formData.subject} onValueChange={handleSelectChange}>
                           <SelectTrigger className="w-full">
                             <SelectValue placeholder="Select a subject" />
@@ -230,7 +232,7 @@ const Contact = () => {
                       </div>
                       
                       <div className="space-y-2">
-                        <Label htmlFor="message">Message</Label>
+                        <Label htmlFor="message" className="text-sm sm:text-base">Message</Label>
                         <Textarea 
                           id="message" 
                           name="message" 
@@ -238,11 +240,12 @@ const Contact = () => {
                           rows={5} 
                           value={formData.message} 
                           onChange={handleChange} 
-                          required 
+                          required
+                          className="text-sm sm:text-base"
                         />
                       </div>
                       
-                      <Button type="submit" className="w-full" disabled={loading}>
+                      <Button type="submit" className="w-full h-10 sm:h-11 text-sm sm:text-base" disabled={loading}>
                         {loading ? 'Sending...' : 'Send Message'}
                       </Button>
                     </form>
@@ -263,9 +266,9 @@ const Contact = () => {
               </p>
             </div>
             
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8">
               <div className="space-y-2">
-                <h3 className="text-lg font-semibold">How accurate is the loan prediction system?</h3>
+                <h3 className="text-base sm:text-lg font-semibold">How accurate is the loan prediction system?</h3>
                 <p className="text-muted-foreground">Our predictions are based on extensive data analysis and machine learning algorithms with accuracy rates above 90% in most cases.</p>
               </div>
               <div className="space-y-2">

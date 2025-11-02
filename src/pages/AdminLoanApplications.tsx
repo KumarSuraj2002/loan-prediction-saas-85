@@ -148,21 +148,22 @@ const AdminLoanApplications = ({ status }: AdminLoanApplicationsProps) => {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       <Card>
-        <CardHeader>
-          <CardTitle>{getTitle()}</CardTitle>
+        <CardHeader className="p-4 sm:p-6">
+          <CardTitle className="text-lg sm:text-xl">{getTitle()}</CardTitle>
         </CardHeader>
-        <CardContent>
-          <Table>
+        <CardContent className="p-0 sm:p-6">
+          <div className="overflow-x-auto">
+            <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Applicant</TableHead>
-                <TableHead>Loan Type</TableHead>
-                <TableHead>Amount</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Applied</TableHead>
-                <TableHead>Actions</TableHead>
+                <TableHead className="min-w-[150px]">Applicant</TableHead>
+                <TableHead className="min-w-[120px]">Loan Type</TableHead>
+                <TableHead className="min-w-[100px]">Amount</TableHead>
+                <TableHead className="min-w-[120px]">Status</TableHead>
+                <TableHead className="min-w-[100px]">Applied</TableHead>
+                <TableHead className="min-w-[140px]">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -183,7 +184,7 @@ const AdminLoanApplications = ({ status }: AdminLoanApplicationsProps) => {
                   </TableCell>
                   <TableCell>{new Date(app.created_at).toLocaleDateString()}</TableCell>
                   <TableCell>
-                    <div className="flex space-x-2">
+                    <div className="flex flex-nowrap gap-1 sm:gap-2">
                       <Button
                         variant="outline"
                         size="sm"
@@ -191,8 +192,9 @@ const AdminLoanApplications = ({ status }: AdminLoanApplicationsProps) => {
                           setSelectedApplication(app);
                           setIsViewDialogOpen(true);
                         }}
+                        className="h-8 w-8 sm:h-9 sm:w-9 p-0"
                       >
-                        <Eye className="h-4 w-4" />
+                        <Eye className="h-3 w-3 sm:h-4 sm:w-4" />
                       </Button>
                       <Button
                         variant="outline"
@@ -202,15 +204,17 @@ const AdminLoanApplications = ({ status }: AdminLoanApplicationsProps) => {
                           setEditForm(app);
                           setIsEditDialogOpen(true);
                         }}
+                        className="h-8 w-8 sm:h-9 sm:w-9 p-0"
                       >
-                        <Edit className="h-4 w-4" />
+                        <Edit className="h-3 w-3 sm:h-4 sm:w-4" />
                       </Button>
                       <Button
                         variant="outline"
                         size="sm"
                         onClick={() => deleteApplication(app.id)}
+                        className="h-8 w-8 sm:h-9 sm:w-9 p-0"
                       >
-                        <Trash2 className="h-4 w-4" />
+                        <Trash2 className="h-3 w-3 sm:h-4 sm:w-4" />
                       </Button>
                     </div>
                   </TableCell>
@@ -218,18 +222,19 @@ const AdminLoanApplications = ({ status }: AdminLoanApplicationsProps) => {
               ))}
             </TableBody>
           </Table>
+          </div>
         </CardContent>
       </Card>
 
       {/* View Dialog */}
       <Dialog open={isViewDialogOpen} onOpenChange={setIsViewDialogOpen}>
-        <DialogContent className="max-w-2xl">
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Application Details</DialogTitle>
           </DialogHeader>
           {selectedApplication && (
-            <div className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-4 p-4 sm:p-0">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <Label>Applicant Name</Label>
                   <p className="text-sm">{selectedApplication.applicant_name}</p>
@@ -269,14 +274,14 @@ const AdminLoanApplications = ({ status }: AdminLoanApplicationsProps) => {
                   <p className="text-sm">{selectedApplication.notes}</p>
                 </div>
               )}
-              <div className="flex space-x-2">
-                <Button onClick={() => updateApplicationStatus(selectedApplication.id, 'approved')}>
+              <div className="flex flex-col sm:flex-row gap-2">
+                <Button onClick={() => updateApplicationStatus(selectedApplication.id, 'approved')} className="w-full sm:w-auto">
                   Approve
                 </Button>
-                <Button variant="destructive" onClick={() => updateApplicationStatus(selectedApplication.id, 'rejected')}>
+                <Button variant="destructive" onClick={() => updateApplicationStatus(selectedApplication.id, 'rejected')} className="w-full sm:w-auto">
                   Reject
                 </Button>
-                <Button variant="outline" onClick={() => updateApplicationStatus(selectedApplication.id, 'under_review')}>
+                <Button variant="outline" onClick={() => updateApplicationStatus(selectedApplication.id, 'under_review')} className="w-full sm:w-auto">
                   Under Review
                 </Button>
               </div>
@@ -287,12 +292,12 @@ const AdminLoanApplications = ({ status }: AdminLoanApplicationsProps) => {
 
       {/* Edit Dialog */}
       <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-        <DialogContent className="max-w-2xl">
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Edit Application</DialogTitle>
           </DialogHeader>
-          <div className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
+          <div className="space-y-4 p-4 sm:p-0">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <Label>Application Status</Label>
                 <Select
@@ -319,9 +324,9 @@ const AdminLoanApplications = ({ status }: AdminLoanApplicationsProps) => {
                 placeholder="Add notes about this application..."
               />
             </div>
-            <div className="flex space-x-2">
-              <Button onClick={updateApplication}>Update</Button>
-              <Button variant="outline" onClick={() => setIsEditDialogOpen(false)}>Cancel</Button>
+            <div className="flex flex-col sm:flex-row gap-2">
+              <Button onClick={updateApplication} className="w-full sm:w-auto">Update</Button>
+              <Button variant="outline" onClick={() => setIsEditDialogOpen(false)} className="w-full sm:w-auto">Cancel</Button>
             </div>
           </div>
         </DialogContent>
