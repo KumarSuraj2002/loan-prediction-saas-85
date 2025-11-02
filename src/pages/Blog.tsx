@@ -34,6 +34,26 @@ const Blog = () => {
 
   useEffect(() => {
     fetchPosts();
+
+    // Set up real-time subscription
+    const channel = supabase
+      .channel('blog-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'blog_posts'
+        },
+        () => {
+          fetchPosts();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, []);
 
   const fetchPosts = async () => {

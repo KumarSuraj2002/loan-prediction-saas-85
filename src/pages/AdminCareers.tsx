@@ -69,6 +69,26 @@ const AdminCareers = () => {
 
   useEffect(() => {
     fetchCareers();
+
+    // Set up real-time subscription
+    const channel = supabase
+      .channel('admin-careers-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'careers'
+        },
+        () => {
+          fetchCareers();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, []);
 
   const fetchCareers = async () => {

@@ -76,6 +76,26 @@ const Press = () => {
 
   useEffect(() => {
     fetchPressReleases();
+
+    // Set up real-time subscription
+    const channel = supabase
+      .channel('press-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'press_releases'
+        },
+        () => {
+          fetchPressReleases();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, []);
 
   const fetchPressReleases = async () => {
