@@ -37,8 +37,6 @@ const Profile = () => {
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
   const [userId, setUserId] = useState<string>('');
-  const [viewDocumentUrl, setViewDocumentUrl] = useState<string | null>(null);
-  const [isDocumentDialogOpen, setIsDocumentDialogOpen] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   
   const [documents, setDocuments] = useState({
@@ -721,24 +719,6 @@ const Profile = () => {
           </CardContent>
         </Card>
       </main>
-
-      {/* Document Viewer Dialog */}
-      <Dialog open={isDocumentDialogOpen} onOpenChange={setIsDocumentDialogOpen}>
-        <DialogContent className="max-w-4xl h-[80vh]">
-          <DialogHeader>
-            <DialogTitle>Document Preview</DialogTitle>
-          </DialogHeader>
-          <div className="flex-1 h-full">
-            {viewDocumentUrl && (
-              <iframe
-                src={viewDocumentUrl}
-                className="w-full h-full border-0"
-                title="Document Preview"
-              />
-            )}
-          </div>
-        </DialogContent>
-      </Dialog>
 
       <Footer />
     </div>
