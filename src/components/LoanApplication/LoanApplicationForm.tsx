@@ -51,7 +51,30 @@ const LoanApplicationForm: React.FC<LoanApplicationFormProps> = ({ loanType }) =
     }));
   };
 
+  const validateCurrentQuestion = () => {
+    const currentQuestion = questions[currentStep];
+    const value = formData[currentQuestion.id];
+    
+    // Check if the question is required and has no value
+    if (currentQuestion.required) {
+      if (value === undefined || value === null || value === '') {
+        return false;
+      }
+    }
+    
+    return true;
+  };
+
   const handleNext = () => {
+    if (!validateCurrentQuestion()) {
+      toast({
+        title: "Required Field",
+        description: "Please answer the question before proceeding to the next step.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
     if (currentStep < totalSteps - 1) {
       setCurrentStep(currentStep + 1);
     }
@@ -66,6 +89,15 @@ const LoanApplicationForm: React.FC<LoanApplicationFormProps> = ({ loanType }) =
   };
 
   const handleSubmit = () => {
+    if (!validateCurrentQuestion()) {
+      toast({
+        title: "Required Field",
+        description: "Please answer all questions before submitting the application.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
     // In a real app, you would submit the data to your backend
     console.log('Form submitted:', formData);
     toast({
