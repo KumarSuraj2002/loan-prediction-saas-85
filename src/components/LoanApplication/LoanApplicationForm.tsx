@@ -8,16 +8,21 @@ import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { ArrowLeft, ArrowRight } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
 interface LoanApplicationFormProps {
   loanType: string;
+}
+
+interface FormData {
+  [key: string]: string | number | boolean;
 }
 
 const LoanApplicationForm: React.FC<LoanApplicationFormProps> = ({ loanType }) => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [currentStep, setCurrentStep] = useState(0);
-  const [formData, setFormData] = useState({});
+  const [formData, setFormData] = useState<FormData>({});
 
   // Map URL loan type to internal loan type key
   const mapLoanTypeToKey = (urlLoanType: string): string => {
@@ -88,7 +93,7 @@ const LoanApplicationForm: React.FC<LoanApplicationFormProps> = ({ loanType }) =
     }
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (!validateCurrentQuestion()) {
       toast({
         title: "Required Field",
@@ -98,13 +103,42 @@ const LoanApplicationForm: React.FC<LoanApplicationFormProps> = ({ loanType }) =
       return;
     }
     
-    // In a real app, you would submit the data to your backend
-    console.log('Form submitted:', formData);
-    toast({
-      title: "Application Submitted",
-      description: `Your ${getLoanTypeLabel(loanTypeKey)} application has been submitted successfully.`,
-    });
-    navigate('/');
+    try {
+      // Prepare data for database
+      const loanApplicationData = {
+        applicant_name: String(formData.fullName || ''),
+        email: String(formData.email || ''),
+        phone: formData.phone ? String(formData.phone) : null,
+        loan_type: getLoanTypeLabel(loanTypeKey),
+        loan_amount: formData.loanAmount ? parseFloat(String(formData.loanAmount)) : 0,
+        monthly_income: formData.monthlyIncome ? parseFloat(String(formData.monthlyIncome)) : 0,
+        credit_score: formData.creditScore ? getCreditScoreValue(formData.creditScore) : null,
+        employment_status: formData.employmentStatus ? String(formData.employmentStatus) : (formData.employmentType ? String(formData.employmentType) : null),
+        application_data: formData,
+        application_status: 'pending'
+      };
+
+      const { error } = await supabase
+        .from('loan_applications')
+        .insert([loanApplicationData]);
+
+      if (error) {
+        throw error;
+      }
+
+      toast({
+        title: "Application Submitted",
+        description: `Your ${getLoanTypeLabel(loanTypeKey)} application has been submitted successfully.`,
+      });
+      navigate('/');
+    } catch (error) {
+      console.error('Error submitting application:', error);
+      toast({
+        title: "Submission Failed",
+        description: "There was an error submitting your application. Please try again.",
+        variant: "destructive",
+      });
+    }
   };
 
   const currentQuestion = questions[currentStep];
@@ -169,6 +203,19 @@ function getLoanTypeLabel(loanType: string): string {
     business: 'Business Loan'
   };
   return labels[loanType] || 'Loan Application';
+}
+
+function getCreditScoreValue(creditScoreRange: string | number | boolean): number | null {
+  const creditScoreString = String(creditScoreRange);
+  const scoreMapping: Record<string, number> = {
+    'excellent': 775,
+    'good': 725,
+    'fair': 675,
+    'poor': 625,
+    'bad': 575,
+    'unknown': 650
+  };
+  return scoreMapping[creditScoreString] || null;
 }
 
 function renderQuestionInput(question: any, handleChange: any, formData: any) {
