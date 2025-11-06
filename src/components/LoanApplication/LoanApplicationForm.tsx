@@ -104,6 +104,9 @@ const LoanApplicationForm: React.FC<LoanApplicationFormProps> = ({ loanType }) =
     }
     
     try {
+      // Get current user
+      const { data: { user } } = await supabase.auth.getUser();
+      
       // Prepare data for database
       const loanApplicationData = {
         applicant_name: String(formData.fullName || ''),
@@ -115,7 +118,8 @@ const LoanApplicationForm: React.FC<LoanApplicationFormProps> = ({ loanType }) =
         credit_score: formData.creditScore ? getCreditScoreValue(formData.creditScore) : null,
         employment_status: formData.employmentStatus ? String(formData.employmentStatus) : (formData.employmentType ? String(formData.employmentType) : null),
         application_data: formData,
-        application_status: 'pending'
+        application_status: 'pending',
+        user_id: user?.id || null
       };
 
       const { error } = await supabase

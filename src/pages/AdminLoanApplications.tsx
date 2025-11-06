@@ -40,6 +40,7 @@ const AdminLoanApplications = ({ status }: AdminLoanApplicationsProps) => {
   const [isViewDialogOpen, setIsViewDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [editForm, setEditForm] = useState<Partial<LoanApplication>>({});
+  const [statusUpdateReason, setStatusUpdateReason] = useState('');
 
   const fetchApplications = async () => {
     try {
@@ -68,16 +69,42 @@ const AdminLoanApplications = ({ status }: AdminLoanApplicationsProps) => {
     fetchApplications();
   }, [status]);
 
-  const updateApplicationStatus = async (id: string, newStatus: string) => {
+  const updateApplicationStatus = async (id: string, newStatus: string, reason?: string) => {
     try {
+      const application = applications.find(app => app.id === id);
+      if (!application) return;
+
       const { error } = await supabase
         .from('loan_applications')
         .update({ application_status: newStatus })
         .eq('id', id);
 
       if (error) throw error;
+
+      // Create notification for the user if they have a user_id
+      if ((application as any).user_id) {
+        const statusMessages: Record<string, { title: string; type: string }> = {
+          approved: { title: 'Application Approved', type: 'success' },
+          rejected: { title: 'Application Rejected', type: 'error' },
+          under_review: { title: 'Application Under Review', type: 'info' },
+        };
+
+        const notification = statusMessages[newStatus];
+        if (notification) {
+          await supabase.from('notifications').insert({
+            user_id: (application as any).user_id,
+            title: notification.title,
+            message: reason || `Your ${application.loan_type} application status has been updated to ${newStatus}.`,
+            type: notification.type,
+            related_entity_type: 'loan_application',
+            related_entity_id: application.id,
+          });
+        }
+      }
       
       toast.success('Application status updated');
+      setIsViewDialogOpen(false);
+      setStatusUpdateReason('');
       fetchApplications();
     } catch (error) {
       console.error('Error updating status:', error);
@@ -274,14 +301,23 @@ const AdminLoanApplications = ({ status }: AdminLoanApplicationsProps) => {
                   <p className="text-sm">{selectedApplication.notes}</p>
                 </div>
               )}
+              <div>
+                <Label>Reason for Status Update (Optional)</Label>
+                <Textarea
+                  value={statusUpdateReason}
+                  onChange={(e) => setStatusUpdateReason(e.target.value)}
+                  placeholder="Provide a reason for the status update that will be sent to the applicant..."
+                  className="mt-2"
+                />
+              </div>
               <div className="flex flex-col sm:flex-row gap-2">
-                <Button onClick={() => updateApplicationStatus(selectedApplication.id, 'approved')} className="w-full sm:w-auto">
+                <Button onClick={() => updateApplicationStatus(selectedApplication.id, 'approved', statusUpdateReason)} className="w-full sm:w-auto">
                   Approve
                 </Button>
-                <Button variant="destructive" onClick={() => updateApplicationStatus(selectedApplication.id, 'rejected')} className="w-full sm:w-auto">
+                <Button variant="destructive" onClick={() => updateApplicationStatus(selectedApplication.id, 'rejected', statusUpdateReason)} className="w-full sm:w-auto">
                   Reject
                 </Button>
-                <Button variant="outline" onClick={() => updateApplicationStatus(selectedApplication.id, 'under_review')} className="w-full sm:w-auto">
+                <Button variant="outline" onClick={() => updateApplicationStatus(selectedApplication.id, 'under_review', statusUpdateReason)} className="w-full sm:w-auto">
                   Under Review
                 </Button>
               </div>
