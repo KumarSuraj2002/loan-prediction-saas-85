@@ -64,33 +64,35 @@ const Footer = () => {
               )}
             </div>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 lg:gap-8 sm:col-span-2 lg:col-span-3">
-            <div className="space-y-3">
-              <h4 className="font-medium text-sm">Products</h4>
-              <ul className="space-y-2 text-sm">
-                <li><a href="/#loan-prediction" className="text-muted-foreground hover:text-foreground">Loan Prediction</a></li>
-                <li><a href="/#bank-recommendation" className="text-muted-foreground hover:text-foreground">Bank Finder</a></li>
-                <li><Link to="/calculator" className="text-muted-foreground hover:text-foreground">EMI Calculator</Link></li>
-                <li><a href="/#features" className="text-muted-foreground hover:text-foreground">Financial Planning</a></li>
-              </ul>
-            </div>
-            <div className="space-y-3">
-              <h4 className="font-medium text-sm">Resources</h4>
-              <ul className="space-y-2 text-sm">
-                <li><Link to="/blog" className="text-muted-foreground hover:text-foreground">Blog</Link></li>
-                <li><Link to="/guides" className="text-muted-foreground hover:text-foreground">Financial Guides</Link></li>
-                <li><Link to="/calculator" className="text-muted-foreground hover:text-foreground">EMI Calculator</Link></li>
-                <li><Link to="/api-docs" className="text-muted-foreground hover:text-foreground">API Documentation</Link></li>
-              </ul>
-            </div>
-            <div className="space-y-3">
-              <h4 className="font-medium text-sm">Company</h4>
-              <ul className="space-y-2 text-sm">
-                <li><Link to="/about" className="text-muted-foreground hover:text-foreground">About Us</Link></li>
-                <li><Link to="/careers" className="text-muted-foreground hover:text-foreground">Careers</Link></li>
-                <li><Link to="/press" className="text-muted-foreground hover:text-foreground">Press</Link></li>
-                <li><Link to="/contact" className="text-muted-foreground hover:text-foreground">Contact</Link></li>
-              </ul>
+          <div className="sm:col-span-2 lg:col-span-3 space-y-6">
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-6 lg:gap-8">
+              <div className="space-y-3">
+                <h4 className="font-medium text-sm">Products</h4>
+                <ul className="space-y-2 text-sm">
+                  <li><a href="/#loan-prediction" className="text-muted-foreground hover:text-foreground">Loan Prediction</a></li>
+                  <li><a href="/#bank-recommendation" className="text-muted-foreground hover:text-foreground">Bank Finder</a></li>
+                  <li><Link to="/calculator" className="text-muted-foreground hover:text-foreground">EMI Calculator</Link></li>
+                  <li><a href="/#features" className="text-muted-foreground hover:text-foreground">Financial Planning</a></li>
+                </ul>
+              </div>
+              <div className="space-y-3">
+                <h4 className="font-medium text-sm">Resources</h4>
+                <ul className="space-y-2 text-sm">
+                  <li><Link to="/blog" className="text-muted-foreground hover:text-foreground">Blog</Link></li>
+                  <li><Link to="/guides" className="text-muted-foreground hover:text-foreground">Financial Guides</Link></li>
+                  <li><Link to="/calculator" className="text-muted-foreground hover:text-foreground">EMI Calculator</Link></li>
+                  <li><Link to="/api-docs" className="text-muted-foreground hover:text-foreground">API Documentation</Link></li>
+                </ul>
+              </div>
+              <div className="space-y-3 col-span-2 sm:col-span-1">
+                <h4 className="font-medium text-sm">Company</h4>
+                <ul className="space-y-2 text-sm">
+                  <li><Link to="/about" className="text-muted-foreground hover:text-foreground">About Us</Link></li>
+                  <li><Link to="/careers" className="text-muted-foreground hover:text-foreground">Careers</Link></li>
+                  <li><Link to="/press" className="text-muted-foreground hover:text-foreground">Press</Link></li>
+                  <li><Link to="/contact" className="text-muted-foreground hover:text-foreground">Contact</Link></li>
+                </ul>
+              </div>
             </div>
           </div>
         </div>
