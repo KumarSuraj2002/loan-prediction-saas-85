@@ -178,7 +178,11 @@ const Navbar = () => {
                 ))}
                 {user ? (
                   <>
-                    <div className="mt-4 px-2 py-2 border rounded-lg">
+                    <div className="mt-4 flex items-center gap-2 px-2">
+                      <span className="text-sm font-medium">Notifications</span>
+                      <NotificationBell />
+                    </div>
+                    <div className="mt-2 px-2 py-2 border rounded-lg">
                       <p className="font-medium text-sm">{user.user_metadata?.full_name || 'User'}</p>
                       <p className="text-muted-foreground text-xs">{user.email}</p>
                     </div>
