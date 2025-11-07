@@ -104,7 +104,9 @@ const Navbar = () => {
         <div className="flex items-center gap-2">
           {user ? (
             <>
-              <NotificationBell />
+              <div className="hidden md:block">
+                <NotificationBell />
+              </div>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button variant="outline" size="icon" className="rounded-full">
