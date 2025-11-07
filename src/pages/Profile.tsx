@@ -7,12 +7,13 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
-import { Loader2, Upload, X } from "lucide-react";
+import { Loader2, Upload, X, FileText } from "lucide-react";
 
 interface ProfileData {
   full_name: string;
@@ -30,6 +31,17 @@ interface ProfileData {
   occupation: string;
 }
 
+interface LoanApplication {
+  id: string;
+  applicant_name: string;
+  email: string;
+  loan_type: string;
+  loan_amount: number;
+  application_status: string;
+  created_at: string;
+  notes?: string;
+}
+
 const Profile = () => {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -37,6 +49,8 @@ const Profile = () => {
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
   const [userId, setUserId] = useState<string>('');
+  const [loanApplications, setLoanApplications] = useState<LoanApplication[]>([]);
+  const [loadingApplications, setLoadingApplications] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   
   const [documents, setDocuments] = useState({
@@ -65,6 +79,34 @@ const Profile = () => {
     }
     setUserId(session.user.id);
     loadProfile(session.user.id);
+    loadLoanApplications(session.user.id);
+  };
+
+  const loadLoanApplications = async (userId: string) => {
+    try {
+      setLoadingApplications(true);
+      const { data, error } = await supabase
+        .from('loan_applications')
+        .select('*')
+        .eq('user_id', userId)
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      setLoanApplications(data || []);
+    } catch (error) {
+      console.error('Error loading loan applications:', error);
+    } finally {
+      setLoadingApplications(false);
+    }
+  };
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'approved': return 'bg-green-500';
+      case 'rejected': return 'bg-red-500';
+      case 'under_review': return 'bg-yellow-500';
+      default: return 'bg-blue-500';
+    }
   };
 
   const loadProfile = async (userId: string) => {
@@ -716,6 +758,62 @@ const Profile = () => {
                 )}
               </Button>
             </form>
+          </CardContent>
+        </Card>
+
+        {/* Loan Applications Section */}
+        <Card className="mt-6">
+          <CardHeader className="p-4 sm:p-6">
+            <CardTitle className="text-xl sm:text-2xl flex items-center gap-2">
+              <FileText className="h-5 w-5" />
+              My Loan Applications
+            </CardTitle>
+            <CardDescription>
+              Track the status of your loan applications
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="p-4 sm:p-6">
+            {loadingApplications ? (
+              <div className="flex justify-center py-8">
+                <Loader2 className="h-8 w-8 animate-spin" />
+              </div>
+            ) : loanApplications.length === 0 ? (
+              <div className="text-center py-8">
+                <p className="text-muted-foreground mb-4">You haven't submitted any loan applications yet.</p>
+                <Button onClick={() => navigate('/loan-application')}>Apply for a Loan</Button>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {loanApplications.map((app) => (
+                  <div
+                    key={app.id}
+                    className="border rounded-lg p-4 hover:shadow-md transition-shadow"
+                  >
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                      <div className="space-y-1">
+                        <h4 className="font-semibold text-lg">{app.loan_type}</h4>
+                        <p className="text-sm text-muted-foreground">
+                          Amount: ${app.loan_amount.toLocaleString()}
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          Applied on: {new Date(app.created_at).toLocaleDateString()}
+                        </p>
+                      </div>
+                      <div className="flex flex-col items-start sm:items-end gap-2">
+                        <Badge className={getStatusColor(app.application_status)}>
+                          {app.application_status.replace('_', ' ').toUpperCase()}
+                        </Badge>
+                        {app.notes && (
+                          <p className="text-xs text-muted-foreground max-w-xs text-left sm:text-right">
+                            Note: {app.notes}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </CardContent>
         </Card>
       </main>
