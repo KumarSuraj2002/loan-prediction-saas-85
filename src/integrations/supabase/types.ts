@@ -275,6 +275,59 @@ export type Database = {
         }
         Relationships: []
       }
+      loan_product_questions: {
+        Row: {
+          created_at: string
+          field_name: string
+          help_text: string | null
+          id: string
+          is_required: boolean
+          loan_product_id: string
+          options: Json | null
+          placeholder: string | null
+          question_text: string
+          question_type: string
+          sequence_order: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          field_name: string
+          help_text?: string | null
+          id?: string
+          is_required?: boolean
+          loan_product_id: string
+          options?: Json | null
+          placeholder?: string | null
+          question_text: string
+          question_type?: string
+          sequence_order?: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          field_name?: string
+          help_text?: string | null
+          id?: string
+          is_required?: boolean
+          loan_product_id?: string
+          options?: Json | null
+          placeholder?: string | null
+          question_text?: string
+          question_type?: string
+          sequence_order?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "loan_product_questions_loan_product_id_fkey"
+            columns: ["loan_product_id"]
+            isOneToOne: false
+            referencedRelation: "loan_products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       loan_products: {
         Row: {
           created_at: string

@@ -9,8 +9,9 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
-import { Edit, Trash2, Plus } from 'lucide-react';
+import { Edit, Trash2, Plus, Settings } from 'lucide-react';
 import { toast } from 'sonner';
+import LoanProductQuestionsManager from '@/components/LoanProductQuestionsManager';
 
 interface LoanProduct {
   id: string;
@@ -36,6 +37,8 @@ const AdminLoanProducts = () => {
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [editForm, setEditForm] = useState<Partial<LoanProduct>>({});
+  const [isQuestionsDialogOpen, setIsQuestionsDialogOpen] = useState(false);
+  const [selectedProductForQuestions, setSelectedProductForQuestions] = useState<LoanProduct | null>(null);
 
   const fetchProducts = async () => {
     try {
@@ -198,13 +201,24 @@ const AdminLoanProducts = () => {
                     </Badge>
                   </TableCell>
                   <TableCell>
-                    <div className="flex space-x-2">
+                    <div className="flex flex-wrap gap-2">
                       <Button
                         variant="outline"
                         size="sm"
                         onClick={() => toggleActiveStatus(product.id, product.is_active)}
                       >
                         {product.is_active ? 'Deactivate' : 'Activate'}
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          setSelectedProductForQuestions(product);
+                          setIsQuestionsDialogOpen(true);
+                        }}
+                        title="Manage Questions"
+                      >
+                        <Settings className="h-4 w-4" />
                       </Button>
                       <Button
                         variant="outline"
@@ -358,6 +372,19 @@ const AdminLoanProducts = () => {
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Questions Manager Dialog */}
+      {selectedProductForQuestions && (
+        <LoanProductQuestionsManager
+          loanProductId={selectedProductForQuestions.id}
+          loanProductName={selectedProductForQuestions.name}
+          isOpen={isQuestionsDialogOpen}
+          onClose={() => {
+            setIsQuestionsDialogOpen(false);
+            setSelectedProductForQuestions(null);
+          }}
+        />
+      )}
     </div>
   );
 };
