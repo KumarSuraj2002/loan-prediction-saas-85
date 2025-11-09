@@ -9,9 +9,10 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
-import { Edit, Trash2, Plus, Settings } from 'lucide-react';
+import { Edit, Trash2, Plus, Settings, Database } from 'lucide-react';
 import { toast } from 'sonner';
 import LoanProductQuestionsManager from '@/components/LoanProductQuestionsManager';
+import { migrateLoanQuestions } from '@/utils/migrateLoanQuestions';
 
 interface LoanProduct {
   id: string;
@@ -39,6 +40,27 @@ const AdminLoanProducts = () => {
   const [editForm, setEditForm] = useState<Partial<LoanProduct>>({});
   const [isQuestionsDialogOpen, setIsQuestionsDialogOpen] = useState(false);
   const [selectedProductForQuestions, setSelectedProductForQuestions] = useState<LoanProduct | null>(null);
+  const [isMigrating, setIsMigrating] = useState(false);
+
+  const handleMigrateQuestions = async () => {
+    if (!confirm('This will replace all existing questions with hardcoded questions from LoanApplicationForm.tsx. Continue?')) {
+      return;
+    }
+
+    setIsMigrating(true);
+    try {
+      const result = await migrateLoanQuestions();
+      if (result.success) {
+        toast.success(result.message);
+      } else {
+        toast.error(result.message);
+      }
+    } catch (error: any) {
+      toast.error('Migration failed: ' + error.message);
+    } finally {
+      setIsMigrating(false);
+    }
+  };
 
   const fetchProducts = async () => {
     try {
@@ -152,10 +174,19 @@ const AdminLoanProducts = () => {
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle>Loan Products</CardTitle>
-          <Button onClick={() => {
-            setEditForm({
-              is_active: true,
-              features: [],
+          <div className="flex gap-2">
+            <Button 
+              variant="outline" 
+              onClick={handleMigrateQuestions}
+              disabled={isMigrating}
+            >
+              <Database className="h-4 w-4 mr-2" />
+              {isMigrating ? 'Migrating...' : 'Import Questions from Code'}
+            </Button>
+            <Button onClick={() => {
+              setEditForm({
+                is_active: true,
+                features: [],
               min_amount: 0,
               max_amount: 0,
               interest_rate_min: 0,
@@ -169,6 +200,7 @@ const AdminLoanProducts = () => {
             <Plus className="h-4 w-4 mr-2" />
             Add Loan Product
           </Button>
+          </div>
         </CardHeader>
         <CardContent>
           <Table>
