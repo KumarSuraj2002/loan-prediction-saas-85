@@ -1,10 +1,12 @@
-
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, Bot } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import LoanAdvisorChat from "./LoanAdvisorChat";
 
 const Hero = () => {
   const navigate = useNavigate();
+  const [isChatOpen, setIsChatOpen] = useState(false);
   
   const handleGetStarted = () => {
     document.getElementById('loan-prediction')?.scrollIntoView({ behavior: 'smooth' });
@@ -22,7 +24,11 @@ const Hero = () => {
               Predict loan approvals and find the perfect bank for your needs with our AI-powered financial assistant.
             </p>
             <div className="flex flex-col sm:flex-row gap-3 mt-2 sm:mt-4 justify-center lg:justify-start">
-              <Button onClick={handleGetStarted} size="lg" className="group w-full sm:w-auto">
+              <Button onClick={() => setIsChatOpen(true)} size="lg" className="group w-full sm:w-auto">
+                <Bot className="mr-2 h-4 w-4" />
+                AI Loan Advisor
+              </Button>
+              <Button onClick={handleGetStarted} variant="outline" size="lg" className="group w-full sm:w-auto">
                 Try Loan Prediction
                 <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
               </Button>
@@ -32,9 +38,11 @@ const Hero = () => {
                 onClick={() => navigate('/loan-application')}
                 className="w-full sm:w-auto"
               >
-                Get Started
+                Apply Now
               </Button>
             </div>
+            
+            <LoanAdvisorChat isOpen={isChatOpen} onClose={() => setIsChatOpen(false)} />
             <div className="mt-4 sm:mt-6 flex flex-col sm:flex-row items-center gap-2 sm:gap-3 text-sm text-muted-foreground justify-center lg:justify-start">
               <div className="flex -space-x-2">
                 {[1, 2, 3, 4].map(i => (

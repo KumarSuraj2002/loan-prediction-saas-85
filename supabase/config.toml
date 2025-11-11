@@ -2,3 +2,9 @@ project_id = "qrivpumpvxkroiwidulq"
 
 [functions.create-admin]
 verify_jwt = false
+
+[functions.migrate-loan-questions]
+verify_jwt = false
+
+[functions.loan-advisor-chat]
+verify_jwt = false
