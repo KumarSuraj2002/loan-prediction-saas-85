@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { ArrowRight, Bot, MessageCircle } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 const Hero = () => {
@@ -7,11 +7,6 @@ const Hero = () => {
   
   const handleGetStarted = () => {
     document.getElementById('loan-prediction')?.scrollIntoView({ behavior: 'smooth' });
-  };
-
-  const openChatbot = () => {
-    // Trigger chatbot open by dispatching a custom event
-    window.dispatchEvent(new CustomEvent('open-loan-advisor'));
   };
   
   return (
@@ -26,11 +21,7 @@ const Hero = () => {
               Predict loan approvals and find the perfect bank for your needs with our AI-powered financial assistant.
             </p>
             <div className="flex flex-col sm:flex-row gap-3 mt-2 sm:mt-4 justify-center lg:justify-start">
-              <Button onClick={openChatbot} size="lg" className="group w-full sm:w-auto">
-                <Bot className="mr-2 h-4 w-4" />
-                AI Loan Advisor
-              </Button>
-              <Button onClick={handleGetStarted} variant="outline" size="lg" className="group w-full sm:w-auto">
+              <Button onClick={handleGetStarted} size="lg" className="group w-full sm:w-auto">
                 Try Loan Prediction
                 <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
               </Button>
