@@ -2,13 +2,15 @@ import { useState, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Bot, Send, X, MessageCircle, Upload, FileText } from 'lucide-react';
-import { useToast } from '@/components/ui/use-toast';
+import { Bot, Send, X, MessageCircle, Upload, FileText, Check, CheckCheck } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 
 interface Message {
   role: 'user' | 'assistant';
   content: string;
+  timestamp: Date;
+  status?: 'sending' | 'delivered' | 'read';
   metadata?: {
     showApplyButton?: boolean;
     bankName?: string;
@@ -24,11 +26,11 @@ const LoanAdvisorChat = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [conversationId, setConversationId] = useState<string | null>(null);
   const [uploadingDoc, setUploadingDoc] = useState(false);
+  const [isTyping, setIsTyping] = useState(false);
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
 
-  // Listen for custom event to open chatbot
   useEffect(() => {
     const handleOpenChat = () => setIsOpen(true);
     window.addEventListener('open-loan-advisor', handleOpenChat);
@@ -39,13 +41,33 @@ const LoanAdvisorChat = () => {
     if (scrollAreaRef.current) {
       scrollAreaRef.current.scrollTop = scrollAreaRef.current.scrollHeight;
     }
-  }, [messages]);
+  }, [messages, isTyping]);
 
   useEffect(() => {
     if (isOpen && messages.length === 0) {
       initializeConversation();
     }
   }, [isOpen]);
+
+  // Mark messages as read when chat is open
+  useEffect(() => {
+    if (isOpen && messages.length > 0) {
+      const lastMsg = messages[messages.length - 1];
+      if (lastMsg.role === 'assistant' && lastMsg.status !== 'read') {
+        setTimeout(() => {
+          setMessages(prev => prev.map((msg, idx) => 
+            idx === prev.length - 1 && msg.role === 'assistant' 
+              ? { ...msg, status: 'read' as const } 
+              : msg
+          ));
+        }, 500);
+      }
+    }
+  }, [isOpen, messages]);
+
+  const formatTime = (date: Date) => {
+    return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  };
 
   const initializeConversation = async () => {
     const sessionId = `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
@@ -84,6 +106,7 @@ const LoanAdvisorChat = () => {
 
   const streamChat = async (currentMessages: Message[]) => {
     setIsLoading(true);
+    setIsTyping(true);
     let assistantMessage = '';
 
     try {
@@ -95,11 +118,12 @@ const LoanAdvisorChat = () => {
             'Content-Type': 'application/json',
             Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
           },
-          body: JSON.stringify({ messages: currentMessages }),
+          body: JSON.stringify({ messages: currentMessages.map(m => ({ role: m.role, content: m.content })) }),
         }
       );
 
       if (!response.ok) {
+        setIsTyping(false);
         if (response.status === 429) {
           toast({
             title: 'Rate Limit Exceeded',
@@ -125,6 +149,9 @@ const LoanAdvisorChat = () => {
 
       if (!reader) throw new Error('No reader available');
 
+      // Once we start receiving content, switch from typing to streaming
+      let startedStreaming = false;
+
       while (true) {
         const { done, value } = await reader.read();
         if (done) break;
@@ -147,17 +174,26 @@ const LoanAdvisorChat = () => {
             const parsed = JSON.parse(jsonStr);
             const content = parsed.choices?.[0]?.delta?.content as string | undefined;
             if (content) {
+              if (!startedStreaming) {
+                setIsTyping(false);
+                startedStreaming = true;
+              }
               assistantMessage += content;
               setMessages((prev) => {
                 const newMessages = [...prev];
                 const lastMessage = newMessages[newMessages.length - 1];
-                if (lastMessage?.role === 'assistant') {
+                if (lastMessage?.role === 'assistant' && !lastMessage.status) {
                   newMessages[newMessages.length - 1] = {
                     ...lastMessage,
                     content: assistantMessage,
                   };
                 } else {
-                  newMessages.push({ role: 'assistant', content: assistantMessage });
+                  newMessages.push({ 
+                    role: 'assistant', 
+                    content: assistantMessage, 
+                    timestamp: new Date(),
+                    status: 'delivered'
+                  });
                 }
                 return newMessages;
               });
@@ -171,6 +207,12 @@ const LoanAdvisorChat = () => {
 
       if (assistantMessage) {
         await saveMessage('assistant', assistantMessage);
+        // Mark as delivered after saving
+        setMessages(prev => prev.map((msg, idx) => 
+          idx === prev.length - 1 && msg.role === 'assistant' 
+            ? { ...msg, status: 'delivered' as const } 
+            : msg
+        ));
       }
     } catch (error) {
       console.error('Chat error:', error);
@@ -181,18 +223,43 @@ const LoanAdvisorChat = () => {
       });
     } finally {
       setIsLoading(false);
+      setIsTyping(false);
     }
   };
 
   const handleSend = async () => {
     if (!input.trim() || isLoading) return;
 
-    const userMessage: Message = { role: 'user', content: input };
+    const userMessage: Message = { 
+      role: 'user', 
+      content: input, 
+      timestamp: new Date(),
+      status: 'sending'
+    };
     const newMessages = [...messages, userMessage];
     setMessages(newMessages);
     setInput('');
 
+    // Mark as delivered after a brief delay
+    setTimeout(() => {
+      setMessages(prev => prev.map((msg, idx) => 
+        idx === prev.length - 1 && msg.role === 'user' && msg.status === 'sending'
+          ? { ...msg, status: 'delivered' as const }
+          : msg
+      ));
+    }, 300);
+
     await saveMessage('user', input);
+    
+    // Mark as read (AI has received it)
+    setTimeout(() => {
+      setMessages(prev => prev.map((msg, idx) => 
+        idx === prev.length - 1 && msg.role === 'user'
+          ? { ...msg, status: 'read' as const }
+          : msg
+      ));
+    }, 600);
+
     await streamChat(newMessages);
   };
 
@@ -243,7 +310,12 @@ const LoanAdvisorChat = () => {
 
       if (uploadedFiles.length > 0) {
         const uploadMessage = `I have uploaded the following documents: ${uploadedFiles.join(', ')}`;
-        const userMessage: Message = { role: 'user', content: uploadMessage };
+        const userMessage: Message = { 
+          role: 'user', 
+          content: uploadMessage, 
+          timestamp: new Date(),
+          status: 'delivered'
+        };
         const newMessages = [...messages, userMessage];
         setMessages(newMessages);
         await saveMessage('user', uploadMessage);
@@ -266,17 +338,21 @@ const LoanAdvisorChat = () => {
 
   const handleApplyClick = (loanType: string, bankName: string) => {
     const applyMessage = `Yes, I want to apply for a ${loanType} loan at ${bankName}. Please help me with the application.`;
-    const userMessage: Message = { role: 'user', content: applyMessage };
+    const userMessage: Message = { 
+      role: 'user', 
+      content: applyMessage, 
+      timestamp: new Date(),
+      status: 'delivered'
+    };
     const newMessages = [...messages, userMessage];
     setMessages(newMessages);
     saveMessage('user', applyMessage);
     streamChat(newMessages);
   };
 
-  const renderMessageContent = (message: Message, index: number) => {
+  const renderMessageContent = (message: Message) => {
     const content = message.content;
     
-    // Check for apply button triggers in assistant messages
     const applyMatch = content.match(/\[APPLY_BUTTON:([^:]+):([^\]]+)\]/);
     const linkMatch = content.match(/\[LOAN_LINK:([^\]]+)\]/);
     
@@ -311,6 +387,25 @@ const LoanAdvisorChat = () => {
     );
   };
 
+  const renderReadReceipt = (message: Message) => {
+    if (message.role !== 'user') return null;
+    
+    return (
+      <div className="flex items-center gap-1 mt-1">
+        <span className="text-[10px] text-muted-foreground">{formatTime(message.timestamp)}</span>
+        {message.status === 'sending' && (
+          <Check className="w-3 h-3 text-muted-foreground" />
+        )}
+        {message.status === 'delivered' && (
+          <CheckCheck className="w-3 h-3 text-muted-foreground" />
+        )}
+        {message.status === 'read' && (
+          <CheckCheck className="w-3 h-3 text-primary" />
+        )}
+      </div>
+    );
+  };
+
   if (!isOpen) {
     return (
       <Button
@@ -327,8 +422,14 @@ const LoanAdvisorChat = () => {
     <div className="fixed bottom-6 right-6 w-[400px] h-[600px] bg-background border rounded-lg shadow-2xl flex flex-col z-50">
       <div className="px-4 py-3 border-b flex items-center justify-between bg-primary text-primary-foreground rounded-t-lg">
         <div className="flex items-center gap-2">
-          <Bot className="w-5 h-5" />
-          <span className="font-semibold">AI Loan Advisor</span>
+          <div className="relative">
+            <Bot className="w-5 h-5" />
+            <span className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 bg-green-500 rounded-full border-2 border-primary" />
+          </div>
+          <div>
+            <span className="font-semibold text-sm">AI Loan Advisor</span>
+            <p className="text-[10px] text-primary-foreground/70">Online</p>
+          </div>
         </div>
         <Button variant="ghost" size="icon" onClick={() => setIsOpen(false)} className="text-primary-foreground hover:bg-primary/80">
           <X className="w-4 h-4" />
@@ -336,11 +437,11 @@ const LoanAdvisorChat = () => {
       </div>
 
       <ScrollArea className="flex-1 px-4 py-3" ref={scrollAreaRef}>
-        <div className="space-y-4">
+        <div className="space-y-3">
           {messages.map((message, index) => (
             <div
               key={index}
-              className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
+              className={`flex flex-col ${message.role === 'user' ? 'items-end' : 'items-start'}`}
             >
               <div
                 className={`max-w-[85%] rounded-lg px-3 py-2 ${
@@ -349,17 +450,29 @@ const LoanAdvisorChat = () => {
                     : 'bg-muted text-foreground'
                 }`}
               >
-                {renderMessageContent(message, index)}
+                {renderMessageContent(message)}
               </div>
+              {message.role === 'user' ? (
+                renderReadReceipt(message)
+              ) : (
+                <span className="text-[10px] text-muted-foreground mt-1">
+                  {formatTime(message.timestamp)}
+                </span>
+              )}
             </div>
           ))}
-          {isLoading && messages[messages.length - 1]?.role === 'user' && (
-            <div className="flex justify-start">
+          
+          {/* Typing Indicator */}
+          {isTyping && (
+            <div className="flex items-start gap-2">
               <div className="bg-muted rounded-lg px-3 py-2">
-                <div className="flex gap-1">
-                  <div className="w-2 h-2 bg-foreground/50 rounded-full animate-bounce" />
-                  <div className="w-2 h-2 bg-foreground/50 rounded-full animate-bounce delay-100" />
-                  <div className="w-2 h-2 bg-foreground/50 rounded-full animate-bounce delay-200" />
+                <div className="flex items-center gap-2">
+                  <div className="flex gap-1">
+                    <span className="w-2 h-2 bg-foreground/50 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
+                    <span className="w-2 h-2 bg-foreground/50 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
+                    <span className="w-2 h-2 bg-foreground/50 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+                  </div>
+                  <span className="text-xs text-muted-foreground">AI is typing...</span>
                 </div>
               </div>
             </div>
