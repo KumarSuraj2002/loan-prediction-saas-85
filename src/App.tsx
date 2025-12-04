@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -37,6 +36,7 @@ import AdminCareers from "./pages/AdminCareers";
 import AdminPress from "./pages/AdminPress";
 import AdminLayout from "./components/AdminLayout";
 import MaintenanceWrapper from "./components/MaintenanceWrapper";
+import LoanAdvisorChat from "./components/LoanAdvisorChat";
 
 const queryClient = new QueryClient();
 
@@ -95,6 +95,8 @@ const App = () => (
             </MaintenanceWrapper>
           } />
         </Routes>
+        {/* Global floating chatbot */}
+        <LoanAdvisorChat />
       </BrowserRouter>
     </TooltipProvider>
   </QueryClientProvider>
