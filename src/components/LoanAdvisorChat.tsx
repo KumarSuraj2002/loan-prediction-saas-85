@@ -421,7 +421,7 @@ const LoanAdvisorChat = () => {
   }
 
   return (
-    <div className="fixed inset-4 sm:inset-auto sm:bottom-6 sm:right-6 sm:w-[400px] sm:h-[600px] sm:max-h-[80vh] bg-background border rounded-lg shadow-2xl flex flex-col z-50">
+    <div className="fixed top-12 bottom-4 left-4 right-4 sm:inset-auto sm:bottom-6 sm:right-6 sm:w-[400px] sm:h-[600px] sm:max-h-[80vh] bg-background border rounded-lg shadow-2xl flex flex-col z-50">
       <div className="px-4 py-3 border-b flex items-center justify-between bg-primary text-primary-foreground sm:rounded-t-lg">
         <div className="flex items-center gap-2">
           <div className="relative">
