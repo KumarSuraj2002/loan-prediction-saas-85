@@ -108,6 +108,7 @@ const LoanAdvisorChat = () => {
     setIsLoading(true);
     setIsTyping(true);
     let assistantMessage = '';
+    let streamingMessageIndex = -1;
 
     try {
       const response = await fetch(
@@ -149,9 +150,6 @@ const LoanAdvisorChat = () => {
 
       if (!reader) throw new Error('No reader available');
 
-      // Once we start receiving content, switch from typing to streaming
-      let startedStreaming = false;
-
       while (true) {
         const { done, value } = await reader.read();
         if (done) break;
@@ -174,29 +172,33 @@ const LoanAdvisorChat = () => {
             const parsed = JSON.parse(jsonStr);
             const content = parsed.choices?.[0]?.delta?.content as string | undefined;
             if (content) {
-              if (!startedStreaming) {
+              if (streamingMessageIndex === -1) {
+                // First token - hide typing indicator and add new message
                 setIsTyping(false);
-                startedStreaming = true;
-              }
-              assistantMessage += content;
-              setMessages((prev) => {
-                const newMessages = [...prev];
-                const lastMessage = newMessages[newMessages.length - 1];
-                if (lastMessage?.role === 'assistant' && !lastMessage.status) {
-                  newMessages[newMessages.length - 1] = {
-                    ...lastMessage,
-                    content: assistantMessage,
-                  };
-                } else {
-                  newMessages.push({ 
+                setMessages((prev) => {
+                  streamingMessageIndex = prev.length;
+                  return [...prev, { 
                     role: 'assistant', 
-                    content: assistantMessage, 
-                    timestamp: new Date(),
-                    status: 'delivered'
-                  });
-                }
-                return newMessages;
-              });
+                    content: content, 
+                    timestamp: new Date()
+                  }];
+                });
+                assistantMessage = content;
+              } else {
+                // Subsequent tokens - update existing message
+                assistantMessage += content;
+                const currentContent = assistantMessage;
+                setMessages((prev) => {
+                  const newMessages = [...prev];
+                  if (newMessages[streamingMessageIndex]) {
+                    newMessages[streamingMessageIndex] = {
+                      ...newMessages[streamingMessageIndex],
+                      content: currentContent,
+                    };
+                  }
+                  return newMessages;
+                });
+              }
             }
           } catch {
             textBuffer = line + '\n' + textBuffer;
@@ -209,7 +211,7 @@ const LoanAdvisorChat = () => {
         await saveMessage('assistant', assistantMessage);
         // Mark as delivered after saving
         setMessages(prev => prev.map((msg, idx) => 
-          idx === prev.length - 1 && msg.role === 'assistant' 
+          idx === streamingMessageIndex 
             ? { ...msg, status: 'delivered' as const } 
             : msg
         ));
