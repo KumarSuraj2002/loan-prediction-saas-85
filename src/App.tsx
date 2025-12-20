@@ -20,6 +20,7 @@ import APIDocumentation from "./pages/APIDocumentation";
 import BankDetailsPage from "./pages/BankDetailsPage";
 import LoanDetailsPage from "./pages/LoanDetailsPage";
 import LoanApplication from "./pages/LoanApplication";
+import Presentation from "./pages/Presentation";
 import AdminLogin from "./pages/AdminLogin";
 import AdminSetup from "./pages/AdminSetup";
 import AdminDashboard from "./pages/AdminDashboard";
@@ -90,6 +91,7 @@ const App = () => (
                 <Route path="/bank/:bankId/loan/:loanType" element={<LoanDetailsPage />} />
                 <Route path="/loan-application" element={<LoanApplication />} />
                 <Route path="/loan-application/:loanType" element={<LoanApplication />} />
+                <Route path="/presentation" element={<Presentation />} />
                 <Route path="*" element={<NotFound />} />
               </Routes>
             </MaintenanceWrapper>
