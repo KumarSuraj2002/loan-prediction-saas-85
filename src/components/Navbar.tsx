@@ -64,6 +64,7 @@ const Navbar = () => {
     { id: 'loan-prediction', label: 'Loan Prediction', path: '/' },
     { id: 'bank-recommendation', label: 'Bank Finder', path: '/' },
     { id: 'features', label: 'Features', path: '/' },
+    { id: 'presentation', label: 'Presentation', path: '/presentation' },
   ];
 
   const isHomePage = window.location.pathname === '/';
