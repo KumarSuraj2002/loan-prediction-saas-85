@@ -19,9 +19,12 @@ import {
   Zap,
   Lock,
   BarChart3,
-  Layers
+  Layers,
+  Download
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import pptxgen from 'pptxgenjs';
+import { toast } from 'sonner';
 
 const slides = [
   {
@@ -229,6 +232,258 @@ const slides = [
 const Presentation = () => {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [isAnimating, setIsAnimating] = useState(false);
+  const [isExporting, setIsExporting] = useState(false);
+
+  const exportToPPT = async () => {
+    setIsExporting(true);
+    try {
+      const pptx = new pptxgen();
+      pptx.author = 'Smart Loan Prediction System';
+      pptx.title = 'Smart Loan Prediction System Presentation';
+      pptx.subject = 'AI-Powered Financial Intelligence Platform';
+
+      // Define colors
+      const primaryColor = '3B82F6';
+      const textColor = '1F2937';
+      const mutedColor = '6B7280';
+      const bgColor = 'FFFFFF';
+
+      slides.forEach((slideData) => {
+        const pptSlide = pptx.addSlide();
+        pptSlide.background = { color: bgColor };
+
+        switch (slideData.type) {
+          case 'title':
+            pptSlide.addText(slideData.title, {
+              x: 0.5, y: 2.5, w: 9, h: 1,
+              fontSize: 44, bold: true, color: primaryColor,
+              align: 'center'
+            });
+            pptSlide.addText(slideData.subtitle || '', {
+              x: 0.5, y: 3.6, w: 9, h: 0.5,
+              fontSize: 24, color: mutedColor,
+              align: 'center'
+            });
+            break;
+
+          case 'overview':
+            pptSlide.addText(slideData.title, {
+              x: 0.5, y: 0.5, w: 9, h: 0.8,
+              fontSize: 36, bold: true, color: textColor
+            });
+            pptSlide.addText(slideData.content?.description || '', {
+              x: 0.5, y: 1.4, w: 9, h: 0.8,
+              fontSize: 16, color: mutedColor
+            });
+            slideData.content?.points.forEach((point, idx) => {
+              pptSlide.addText(`✓ ${point}`, {
+                x: 0.5, y: 2.4 + idx * 0.5, w: 9, h: 0.4,
+                fontSize: 14, color: textColor
+              });
+            });
+            break;
+
+          case 'features':
+            pptSlide.addText(slideData.title, {
+              x: 0.5, y: 0.5, w: 9, h: 0.8,
+              fontSize: 36, bold: true, color: textColor
+            });
+            slideData.features?.forEach((feature, idx) => {
+              const col = idx % 2;
+              const row = Math.floor(idx / 2);
+              pptSlide.addText(feature.title, {
+                x: 0.5 + col * 4.5, y: 1.5 + row * 1.5, w: 4, h: 0.4,
+                fontSize: 18, bold: true, color: primaryColor
+              });
+              pptSlide.addText(feature.desc, {
+                x: 0.5 + col * 4.5, y: 1.9 + row * 1.5, w: 4, h: 0.4,
+                fontSize: 12, color: mutedColor
+              });
+            });
+            break;
+
+          case 'tech':
+            pptSlide.addText(slideData.title, {
+              x: 0.5, y: 0.5, w: 9, h: 0.8,
+              fontSize: 36, bold: true, color: textColor
+            });
+            slideData.categories?.forEach((category, idx) => {
+              pptSlide.addText(category.title, {
+                x: 0.5 + idx * 3, y: 1.5, w: 2.8, h: 0.5,
+                fontSize: 18, bold: true, color: primaryColor
+              });
+              category.items.forEach((item, itemIdx) => {
+                pptSlide.addText(`• ${item}`, {
+                  x: 0.5 + idx * 3, y: 2.1 + itemIdx * 0.4, w: 2.8, h: 0.35,
+                  fontSize: 12, color: textColor
+                });
+              });
+            });
+            break;
+
+          case 'feature-detail':
+            pptSlide.addText(slideData.title, {
+              x: 0.5, y: 0.5, w: 9, h: 0.8,
+              fontSize: 36, bold: true, color: textColor
+            });
+            pptSlide.addText(slideData.content?.description || '', {
+              x: 0.5, y: 1.4, w: 9, h: 0.6,
+              fontSize: 14, color: mutedColor
+            });
+            const items = slideData.content?.factors || slideData.content?.criteria || slideData.content?.capabilities || slideData.content?.features || [];
+            items.forEach((item, idx) => {
+              pptSlide.addText(`✓ ${item}`, {
+                x: 0.5, y: 2.2 + idx * 0.45, w: 5, h: 0.4,
+                fontSize: 13, color: textColor
+              });
+            });
+            const output = slideData.content?.output || slideData.content?.benefit || slideData.content?.tech;
+            if (output) {
+              pptSlide.addText('Output:', {
+                x: 5.5, y: 2.2, w: 4, h: 0.4,
+                fontSize: 14, bold: true, color: primaryColor
+              });
+              pptSlide.addText(output, {
+                x: 5.5, y: 2.7, w: 4, h: 1,
+                fontSize: 12, color: textColor
+              });
+            }
+            break;
+
+          case 'process':
+            pptSlide.addText(slideData.title, {
+              x: 0.5, y: 0.5, w: 9, h: 0.8,
+              fontSize: 36, bold: true, color: textColor
+            });
+            slideData.steps?.forEach((step, idx) => {
+              pptSlide.addShape('ellipse', {
+                x: 0.7 + idx * 1.8, y: 1.5, w: 0.6, h: 0.6,
+                fill: { color: primaryColor }
+              });
+              pptSlide.addText(String(step.step), {
+                x: 0.7 + idx * 1.8, y: 1.55, w: 0.6, h: 0.5,
+                fontSize: 16, bold: true, color: 'FFFFFF', align: 'center'
+              });
+              pptSlide.addText(step.title, {
+                x: 0.3 + idx * 1.8, y: 2.2, w: 1.4, h: 0.4,
+                fontSize: 11, bold: true, color: textColor, align: 'center'
+              });
+              pptSlide.addText(step.desc, {
+                x: 0.3 + idx * 1.8, y: 2.6, w: 1.4, h: 0.6,
+                fontSize: 9, color: mutedColor, align: 'center'
+              });
+            });
+            break;
+
+          case 'admin':
+            pptSlide.addText(slideData.title, {
+              x: 0.5, y: 0.5, w: 9, h: 0.8,
+              fontSize: 36, bold: true, color: textColor
+            });
+            slideData.modules?.forEach((module, idx) => {
+              const col = idx % 3;
+              const row = Math.floor(idx / 3);
+              pptSlide.addText(module.title, {
+                x: 0.5 + col * 3, y: 1.5 + row * 1.2, w: 2.8, h: 0.4,
+                fontSize: 14, bold: true, color: primaryColor
+              });
+              pptSlide.addText(module.desc, {
+                x: 0.5 + col * 3, y: 1.9 + row * 1.2, w: 2.8, h: 0.4,
+                fontSize: 10, color: mutedColor
+              });
+            });
+            break;
+
+          case 'security':
+            pptSlide.addText(slideData.title, {
+              x: 0.5, y: 0.5, w: 9, h: 0.8,
+              fontSize: 36, bold: true, color: textColor
+            });
+            slideData.features?.forEach((feature, idx) => {
+              const col = idx % 2;
+              const row = Math.floor(idx / 2);
+              pptSlide.addText(feature.title, {
+                x: 0.5 + col * 4.5, y: 1.5 + row * 1.3, w: 4, h: 0.4,
+                fontSize: 16, bold: true, color: '22C55E'
+              });
+              pptSlide.addText(feature.desc, {
+                x: 0.5 + col * 4.5, y: 1.9 + row * 1.3, w: 4, h: 0.4,
+                fontSize: 12, color: mutedColor
+              });
+            });
+            break;
+
+          case 'architecture':
+            pptSlide.addText(slideData.title, {
+              x: 0.5, y: 0.5, w: 9, h: 0.8,
+              fontSize: 36, bold: true, color: textColor
+            });
+            const layerColors = ['3B82F6', '22C55E', 'EAB308', 'EF4444'];
+            slideData.layers?.forEach((layer, idx) => {
+              pptSlide.addText(layer.name, {
+                x: 0.5, y: 1.4 + idx * 1.1, w: 3, h: 0.4,
+                fontSize: 14, bold: true, color: layerColors[idx]
+              });
+              pptSlide.addText(layer.items.join(' • '), {
+                x: 3.5, y: 1.4 + idx * 1.1, w: 6, h: 0.4,
+                fontSize: 12, color: textColor
+              });
+            });
+            break;
+
+          case 'benefits':
+            pptSlide.addText(slideData.title, {
+              x: 0.5, y: 0.5, w: 9, h: 0.8,
+              fontSize: 36, bold: true, color: textColor
+            });
+            slideData.benefits?.forEach((benefit, idx) => {
+              pptSlide.addText(benefit.title, {
+                x: 0.5, y: 1.4 + idx * 0.8, w: 2.5, h: 0.4,
+                fontSize: 14, bold: true, color: primaryColor
+              });
+              pptSlide.addText(benefit.desc, {
+                x: 3, y: 1.4 + idx * 0.8, w: 6.5, h: 0.4,
+                fontSize: 12, color: textColor
+              });
+            });
+            break;
+
+          case 'thankyou':
+            pptSlide.addText(slideData.title, {
+              x: 0.5, y: 2, w: 9, h: 1,
+              fontSize: 54, bold: true, color: textColor,
+              align: 'center'
+            });
+            pptSlide.addText(slideData.subtitle || '', {
+              x: 0.5, y: 3.2, w: 9, h: 0.6,
+              fontSize: 24, color: primaryColor,
+              align: 'center'
+            });
+            pptSlide.addText(slideData.contact?.tagline || '', {
+              x: 0.5, y: 4, w: 9, h: 0.5,
+              fontSize: 16, color: mutedColor,
+              align: 'center'
+            });
+            break;
+
+          default:
+            pptSlide.addText(slideData.title, {
+              x: 0.5, y: 2, w: 9, h: 1,
+              fontSize: 36, bold: true, color: textColor,
+              align: 'center'
+            });
+        }
+      });
+
+      await pptx.writeFile({ fileName: 'Smart_Loan_Prediction_System.pptx' });
+      toast.success('Presentation exported successfully!');
+    } catch (error) {
+      console.error('Export failed:', error);
+      toast.error('Failed to export presentation');
+    } finally {
+      setIsExporting(false);
+    }
+  };
 
   const nextSlide = () => {
     if (currentSlide < slides.length - 1 && !isAnimating) {
@@ -618,10 +873,20 @@ const Presentation = () => {
             <Home className="w-5 h-5" />
             <span>Back to Home</span>
           </Link>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-4">
             <span className="text-sm text-muted-foreground">
               Slide {currentSlide + 1} of {slides.length}
             </span>
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={exportToPPT}
+              disabled={isExporting}
+              className="flex items-center gap-2"
+            >
+              <Download className="w-4 h-4" />
+              {isExporting ? 'Exporting...' : 'Export PPT'}
+            </Button>
           </div>
         </div>
       </header>
