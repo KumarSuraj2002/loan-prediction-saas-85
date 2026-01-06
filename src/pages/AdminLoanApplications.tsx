@@ -203,7 +203,7 @@ const AdminLoanApplications = ({ status }: AdminLoanApplicationsProps) => {
                     </div>
                   </TableCell>
                   <TableCell>{app.loan_type}</TableCell>
-                  <TableCell>${app.loan_amount.toLocaleString()}</TableCell>
+                  <TableCell>₹{app.loan_amount.toLocaleString()}</TableCell>
                   <TableCell>
                     <Badge className={getStatusColor(app.application_status)}>
                       {app.application_status}
@@ -280,11 +280,11 @@ const AdminLoanApplications = ({ status }: AdminLoanApplicationsProps) => {
                 </div>
                 <div>
                   <Label>Loan Amount</Label>
-                  <p className="text-sm">${selectedApplication.loan_amount.toLocaleString()}</p>
+                  <p className="text-sm">₹{selectedApplication.loan_amount.toLocaleString()}</p>
                 </div>
                 <div>
                   <Label>Monthly Income</Label>
-                  <p className="text-sm">${selectedApplication.monthly_income.toLocaleString()}</p>
+                  <p className="text-sm">₹{selectedApplication.monthly_income.toLocaleString()}</p>
                 </div>
                 <div>
                   <Label>Credit Score</Label>

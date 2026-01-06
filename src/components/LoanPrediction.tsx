@@ -343,7 +343,7 @@ const LoanPrediction = () => {
                         </div>
                         <div className="p-3 border rounded-md bg-card">
                           <p className="text-xs sm:text-sm text-muted-foreground">Monthly Payment</p>
-                          <p className="text-base sm:text-lg font-semibold">${result.monthlyPayment}</p>
+                          <p className="text-base sm:text-lg font-semibold">₹{result.monthlyPayment}</p>
                         </div>
                       </div>
                     )}

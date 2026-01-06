@@ -898,7 +898,7 @@ const Profile = () => {
                       <div className="space-y-1">
                         <h4 className="font-semibold text-lg">{app.loan_type}</h4>
                         <p className="text-sm text-muted-foreground">
-                          Amount: ${app.loan_amount.toLocaleString()}
+                          Amount: ₹{app.loan_amount.toLocaleString()}
                         </p>
                         <p className="text-xs text-muted-foreground">
                           Applied on: {new Date(app.created_at).toLocaleDateString()}
