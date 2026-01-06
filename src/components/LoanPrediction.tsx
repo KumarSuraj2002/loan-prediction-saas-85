@@ -151,7 +151,7 @@ const LoanPrediction = () => {
                       name="income"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Annual Income ($)</FormLabel>
+                          <FormLabel>Annual Income (₹)</FormLabel>
                           <FormControl>
                             <Input type="number" placeholder="50000" {...field} />
                           </FormControl>
@@ -181,7 +181,7 @@ const LoanPrediction = () => {
                       name="loanAmount"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Loan Amount ($)</FormLabel>
+                          <FormLabel>Loan Amount (₹)</FormLabel>
                           <FormControl>
                             <Input type="number" placeholder="15000" {...field} />
                           </FormControl>
@@ -236,7 +236,7 @@ const LoanPrediction = () => {
                       name="existingDebt"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Existing Debt ($)</FormLabel>
+                          <FormLabel>Existing Debt (₹)</FormLabel>
                           <FormControl>
                             <Input type="number" placeholder="5000" min="0" {...field} />
                           </FormControl>
