@@ -283,6 +283,44 @@ export type Database = {
         }
         Relationships: []
       }
+      loan_application_documents: {
+        Row: {
+          document_name: string
+          document_type: string
+          id: string
+          loan_application_id: string
+          storage_path: string
+          uploaded_at: string
+          user_id: string
+        }
+        Insert: {
+          document_name: string
+          document_type: string
+          id?: string
+          loan_application_id: string
+          storage_path: string
+          uploaded_at?: string
+          user_id: string
+        }
+        Update: {
+          document_name?: string
+          document_type?: string
+          id?: string
+          loan_application_id?: string
+          storage_path?: string
+          uploaded_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "loan_application_documents_loan_application_id_fkey"
+            columns: ["loan_application_id"]
+            isOneToOne: false
+            referencedRelation: "loan_applications"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       loan_applications: {
         Row: {
           applicant_name: string
