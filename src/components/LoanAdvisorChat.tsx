@@ -49,7 +49,6 @@ const LoanAdvisorChat = () => {
     }
   }, [isOpen]);
 
-  // Mark messages as read when chat is open
   useEffect(() => {
     if (isOpen && messages.length > 0) {
       const lastMsg = messages[messages.length - 1];
@@ -65,43 +64,40 @@ const LoanAdvisorChat = () => {
     }
   }, [isOpen, messages]);
 
-  const formatTime = (date: Date) => {
-    return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-  };
+  const formatTime = (date: Date) => date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
   const initializeConversation = async () => {
     const sessionId = `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-    
     const { data: user } = await supabase.auth.getUser();
     
     const { data: conversation, error } = await supabase
       .from('chat_conversations')
-      .insert({
-        session_id: sessionId,
-        user_id: user?.user?.id || null,
-        status: 'active'
-      })
+      .insert({ session_id: sessionId, user_id: user?.user?.id || null, status: 'active' })
       .select()
       .single();
 
-    if (error) {
-      console.error('Error creating conversation:', error);
-    } else {
-      setConversationId(conversation.id);
-    }
+    if (error) console.error('Error creating conversation:', error);
+    else setConversationId(conversation.id);
 
     streamChat([]);
   };
 
   const saveMessage = async (role: 'user' | 'assistant', content: string, metadata?: any) => {
     if (!conversationId) return;
-
     await supabase.from('chat_messages').insert({
-      conversation_id: conversationId,
-      role,
-      content,
-      metadata: metadata || {}
+      conversation_id: conversationId, role, content, metadata: metadata || {}
     });
+  };
+
+  const findLatestLoanApplication = async (userId: string) => {
+    const { data } = await supabase
+      .from('loan_applications')
+      .select('id')
+      .eq('user_id', userId)
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .single();
+    return data?.id || null;
   };
 
   const streamChat = async (currentMessages: Message[]) => {
@@ -126,19 +122,11 @@ const LoanAdvisorChat = () => {
       if (!response.ok) {
         setIsTyping(false);
         if (response.status === 429) {
-          toast({
-            title: 'Rate Limit Exceeded',
-            description: 'Too many requests. Please try again later.',
-            variant: 'destructive',
-          });
+          toast({ title: 'Rate Limit Exceeded', description: 'Too many requests. Please try again later.', variant: 'destructive' });
           return;
         }
         if (response.status === 402) {
-          toast({
-            title: 'Service Unavailable',
-            description: 'AI service needs credits. Please contact support.',
-            variant: 'destructive',
-          });
+          toast({ title: 'Service Unavailable', description: 'AI service needs credits. Please contact support.', variant: 'destructive' });
           return;
         }
         throw new Error('Failed to get response');
@@ -147,24 +135,20 @@ const LoanAdvisorChat = () => {
       const reader = response.body?.getReader();
       const decoder = new TextDecoder();
       let textBuffer = '';
-
       if (!reader) throw new Error('No reader available');
 
       while (true) {
         const { done, value } = await reader.read();
         if (done) break;
-
         textBuffer += decoder.decode(value, { stream: true });
 
         let newlineIndex: number;
         while ((newlineIndex = textBuffer.indexOf('\n')) !== -1) {
           let line = textBuffer.slice(0, newlineIndex);
           textBuffer = textBuffer.slice(newlineIndex + 1);
-
           if (line.endsWith('\r')) line = line.slice(0, -1);
           if (line.startsWith(':') || line.trim() === '') continue;
           if (!line.startsWith('data: ')) continue;
-
           const jsonStr = line.slice(6).trim();
           if (jsonStr === '[DONE]') break;
 
@@ -173,28 +157,19 @@ const LoanAdvisorChat = () => {
             const content = parsed.choices?.[0]?.delta?.content as string | undefined;
             if (content) {
               if (streamingMessageIndex === -1) {
-                // First token - hide typing indicator and add new message
                 setIsTyping(false);
                 setMessages((prev) => {
                   streamingMessageIndex = prev.length;
-                  return [...prev, { 
-                    role: 'assistant', 
-                    content: content, 
-                    timestamp: new Date()
-                  }];
+                  return [...prev, { role: 'assistant', content: content, timestamp: new Date() }];
                 });
                 assistantMessage = content;
               } else {
-                // Subsequent tokens - update existing message
                 assistantMessage += content;
                 const currentContent = assistantMessage;
                 setMessages((prev) => {
                   const newMessages = [...prev];
                   if (newMessages[streamingMessageIndex]) {
-                    newMessages[streamingMessageIndex] = {
-                      ...newMessages[streamingMessageIndex],
-                      content: currentContent,
-                    };
+                    newMessages[streamingMessageIndex] = { ...newMessages[streamingMessageIndex], content: currentContent };
                   }
                   return newMessages;
                 });
@@ -209,20 +184,13 @@ const LoanAdvisorChat = () => {
 
       if (assistantMessage) {
         await saveMessage('assistant', assistantMessage);
-        // Mark as delivered after saving
         setMessages(prev => prev.map((msg, idx) => 
-          idx === streamingMessageIndex 
-            ? { ...msg, status: 'delivered' as const } 
-            : msg
+          idx === streamingMessageIndex ? { ...msg, status: 'delivered' as const } : msg
         ));
       }
     } catch (error) {
       console.error('Chat error:', error);
-      toast({
-        title: 'Error',
-        description: 'Failed to get response from AI advisor',
-        variant: 'destructive',
-      });
+      toast({ title: 'Error', description: 'Failed to get response from AI advisor', variant: 'destructive' });
     } finally {
       setIsLoading(false);
       setIsTyping(false);
@@ -231,34 +199,23 @@ const LoanAdvisorChat = () => {
 
   const handleSend = async () => {
     if (!input.trim() || isLoading) return;
-
-    const userMessage: Message = { 
-      role: 'user', 
-      content: input, 
-      timestamp: new Date(),
-      status: 'sending'
-    };
+    const userMessage: Message = { role: 'user', content: input, timestamp: new Date(), status: 'sending' };
     const newMessages = [...messages, userMessage];
     setMessages(newMessages);
     setInput('');
 
-    // Mark as delivered after a brief delay
     setTimeout(() => {
       setMessages(prev => prev.map((msg, idx) => 
         idx === prev.length - 1 && msg.role === 'user' && msg.status === 'sending'
-          ? { ...msg, status: 'delivered' as const }
-          : msg
+          ? { ...msg, status: 'delivered' as const } : msg
       ));
     }, 300);
 
     await saveMessage('user', input);
     
-    // Mark as read (AI has received it)
     setTimeout(() => {
       setMessages(prev => prev.map((msg, idx) => 
-        idx === prev.length - 1 && msg.role === 'user'
-          ? { ...msg, status: 'read' as const }
-          : msg
+        idx === prev.length - 1 && msg.role === 'user' ? { ...msg, status: 'read' as const } : msg
       ));
     }, 600);
 
@@ -266,10 +223,7 @@ const LoanAdvisorChat = () => {
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault();
-      handleSend();
-    }
+    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSend(); }
   };
 
   const handleDocumentUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -282,13 +236,12 @@ const LoanAdvisorChat = () => {
     try {
       const { data: user } = await supabase.auth.getUser();
       if (!user?.user?.id) {
-        toast({
-          title: 'Login Required',
-          description: 'Please login to upload documents',
-          variant: 'destructive',
-        });
+        toast({ title: 'Login Required', description: 'Please login to upload documents', variant: 'destructive' });
         return;
       }
+
+      // Find latest loan application for this user
+      const loanApplicationId = await findLatestLoanApplication(user.user.id);
 
       for (const file of files) {
         const fileExt = file.name.split('.').pop();
@@ -300,24 +253,27 @@ const LoanAdvisorChat = () => {
 
         if (uploadError) {
           console.error('Upload error:', uploadError);
-          toast({
-            title: 'Upload Failed',
-            description: `Failed to upload ${file.name}`,
-            variant: 'destructive',
-          });
+          toast({ title: 'Upload Failed', description: `Failed to upload ${file.name}`, variant: 'destructive' });
         } else {
           uploadedFiles.push(file.name);
+
+          // Link document to loan application if one exists
+          if (loanApplicationId) {
+            const docType = guessDocumentType(file.name);
+            await supabase.from('loan_application_documents').insert({
+              loan_application_id: loanApplicationId,
+              user_id: user.user.id,
+              document_type: docType,
+              document_name: file.name,
+              storage_path: fileName,
+            });
+          }
         }
       }
 
       if (uploadedFiles.length > 0) {
         const uploadMessage = `I have uploaded the following documents: ${uploadedFiles.join(', ')}`;
-        const userMessage: Message = { 
-          role: 'user', 
-          content: uploadMessage, 
-          timestamp: new Date(),
-          status: 'delivered'
-        };
+        const userMessage: Message = { role: 'user', content: uploadMessage, timestamp: new Date(), status: 'delivered' };
         const newMessages = [...messages, userMessage];
         setMessages(newMessages);
         await saveMessage('user', uploadMessage);
@@ -325,27 +281,26 @@ const LoanAdvisorChat = () => {
       }
     } catch (error) {
       console.error('Document upload error:', error);
-      toast({
-        title: 'Error',
-        description: 'Failed to upload documents',
-        variant: 'destructive',
-      });
+      toast({ title: 'Error', description: 'Failed to upload documents', variant: 'destructive' });
     } finally {
       setUploadingDoc(false);
-      if (fileInputRef.current) {
-        fileInputRef.current.value = '';
-      }
+      if (fileInputRef.current) fileInputRef.current.value = '';
     }
+  };
+
+  const guessDocumentType = (filename: string): string => {
+    const lower = filename.toLowerCase();
+    if (lower.includes('pan')) return 'pan_card';
+    if (lower.includes('aadhar') || lower.includes('aadhaar')) return 'aadhar_card';
+    if (lower.includes('income') || lower.includes('salary')) return 'income_certificate';
+    if (lower.includes('bank') || lower.includes('statement')) return 'bank_statement';
+    if (lower.includes('address') || lower.includes('proof')) return 'address_proof';
+    return 'other';
   };
 
   const handleApplyClick = (loanType: string, bankName: string) => {
     const applyMessage = `Yes, I want to apply for a ${loanType} loan at ${bankName}. Please help me with the application.`;
-    const userMessage: Message = { 
-      role: 'user', 
-      content: applyMessage, 
-      timestamp: new Date(),
-      status: 'delivered'
-    };
+    const userMessage: Message = { role: 'user', content: applyMessage, timestamp: new Date(), status: 'delivered' };
     const newMessages = [...messages, userMessage];
     setMessages(newMessages);
     saveMessage('user', applyMessage);
@@ -354,7 +309,6 @@ const LoanAdvisorChat = () => {
 
   const renderMessageContent = (message: Message) => {
     const content = message.content;
-    
     const applyMatch = content.match(/\[APPLY_BUTTON:([^:]+):([^\]]+)\]/);
     const linkMatch = content.match(/\[LOAN_LINK:([^\]]+)\]/);
     
@@ -366,23 +320,13 @@ const LoanAdvisorChat = () => {
       <div>
         <p className="text-sm whitespace-pre-wrap">{displayContent}</p>
         {applyMatch && message.role === 'assistant' && (
-          <Button
-            size="sm"
-            className="mt-2"
-            onClick={() => handleApplyClick(applyMatch[1], applyMatch[2])}
-          >
+          <Button size="sm" className="mt-2" onClick={() => handleApplyClick(applyMatch[1], applyMatch[2])}>
             Apply for {applyMatch[1]} at {applyMatch[2]}
           </Button>
         )}
         {linkMatch && message.role === 'assistant' && (
-          <Button
-            size="sm"
-            variant="outline"
-            className="mt-2"
-            onClick={() => window.open(`/loan-application/${linkMatch[1].toLowerCase().replace(/\s+/g, '-')}`, '_blank')}
-          >
-            <FileText className="w-4 h-4 mr-2" />
-            Go to {linkMatch[1]} Application
+          <Button size="sm" variant="outline" className="mt-2" onClick={() => window.open(`/loan-application/${linkMatch[1].toLowerCase().replace(/\s+/g, '-')}`, '_blank')}>
+            <FileText className="w-4 h-4 mr-2" /> Go to {linkMatch[1]} Application
           </Button>
         )}
       </div>
@@ -391,30 +335,19 @@ const LoanAdvisorChat = () => {
 
   const renderReadReceipt = (message: Message) => {
     if (message.role !== 'user') return null;
-    
     return (
       <div className="flex items-center gap-1 mt-1">
         <span className="text-[10px] text-muted-foreground">{formatTime(message.timestamp)}</span>
-        {message.status === 'sending' && (
-          <Check className="w-3 h-3 text-muted-foreground" />
-        )}
-        {message.status === 'delivered' && (
-          <CheckCheck className="w-3 h-3 text-muted-foreground" />
-        )}
-        {message.status === 'read' && (
-          <CheckCheck className="w-3 h-3 text-primary" />
-        )}
+        {message.status === 'sending' && <Check className="w-3 h-3 text-muted-foreground" />}
+        {message.status === 'delivered' && <CheckCheck className="w-3 h-3 text-muted-foreground" />}
+        {message.status === 'read' && <CheckCheck className="w-3 h-3 text-primary" />}
       </div>
     );
   };
 
   if (!isOpen) {
     return (
-      <Button
-        onClick={() => setIsOpen(true)}
-        className="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 h-12 w-12 sm:h-14 sm:w-14 rounded-full shadow-lg z-50"
-        size="icon"
-      >
+      <Button onClick={() => setIsOpen(true)} className="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 h-12 w-12 sm:h-14 sm:w-14 rounded-full shadow-lg z-50" size="icon">
         <MessageCircle className="h-5 w-5 sm:h-6 sm:w-6" />
       </Button>
     );
@@ -441,30 +374,16 @@ const LoanAdvisorChat = () => {
       <ScrollArea className="flex-1 px-4 py-3" ref={scrollAreaRef}>
         <div className="space-y-3">
           {messages.map((message, index) => (
-            <div
-              key={index}
-              className={`flex flex-col ${message.role === 'user' ? 'items-end' : 'items-start'}`}
-            >
-              <div
-                className={`max-w-[85%] rounded-lg px-3 py-2 ${
-                  message.role === 'user'
-                    ? 'bg-primary text-primary-foreground'
-                    : 'bg-muted text-foreground'
-                }`}
-              >
+            <div key={index} className={`flex flex-col ${message.role === 'user' ? 'items-end' : 'items-start'}`}>
+              <div className={`max-w-[85%] rounded-lg px-3 py-2 ${message.role === 'user' ? 'bg-primary text-primary-foreground' : 'bg-muted text-foreground'}`}>
                 {renderMessageContent(message)}
               </div>
-              {message.role === 'user' ? (
-                renderReadReceipt(message)
-              ) : (
-                <span className="text-[10px] text-muted-foreground mt-1">
-                  {formatTime(message.timestamp)}
-                </span>
+              {message.role === 'user' ? renderReadReceipt(message) : (
+                <span className="text-[10px] text-muted-foreground mt-1">{formatTime(message.timestamp)}</span>
               )}
             </div>
           ))}
           
-          {/* Typing Indicator */}
           {isTyping && (
             <div className="flex items-start gap-2">
               <div className="bg-muted rounded-lg px-3 py-2">
@@ -484,31 +403,11 @@ const LoanAdvisorChat = () => {
 
       <div className="px-4 py-3 border-t">
         <div className="flex gap-2">
-          <input
-            type="file"
-            ref={fileInputRef}
-            onChange={handleDocumentUpload}
-            multiple
-            accept=".pdf,.jpg,.jpeg,.png,.doc,.docx"
-            className="hidden"
-          />
-          <Button
-            variant="outline"
-            size="icon"
-            onClick={() => fileInputRef.current?.click()}
-            disabled={isLoading || uploadingDoc}
-            title="Upload documents"
-          >
+          <input type="file" ref={fileInputRef} onChange={handleDocumentUpload} multiple accept=".pdf,.jpg,.jpeg,.png,.doc,.docx" className="hidden" />
+          <Button variant="outline" size="icon" onClick={() => fileInputRef.current?.click()} disabled={isLoading || uploadingDoc} title="Upload documents">
             <Upload className="w-4 h-4" />
           </Button>
-          <Input
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            onKeyPress={handleKeyPress}
-            placeholder="Type your message..."
-            disabled={isLoading}
-            className="flex-1"
-          />
+          <Input value={input} onChange={(e) => setInput(e.target.value)} onKeyPress={handleKeyPress} placeholder="Type your message..." disabled={isLoading} className="flex-1" />
           <Button onClick={handleSend} disabled={isLoading || !input.trim()}>
             <Send className="w-4 h-4" />
           </Button>
