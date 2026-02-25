@@ -20,6 +20,54 @@ interface Testimonial {
   rating: number;
 }
 
+const FALLBACK_TESTIMONIALS: Testimonial[] = [
+  {
+    id: "a6da8df8-3290-4f3e-b33b-b6cc90d79d94",
+    name: "Michael Chen",
+    role: "First-time Homebuyer",
+    company: "",
+    avatar: "https://images.unsplash.com/photo-1581092795360-fd1ca04f0952?w=150&h=150&fit=crop&crop=faces",
+    content: "As someone new to mortgages, the bank recommendation system saved me countless hours of research and helped me find the perfect lender.",
+    rating: 5,
+  },
+  {
+    id: "f93b85d2-2390-43be-84ec-b05c1bf9d8c3",
+    name: "Priya Patel",
+    role: "Financial Analyst",
+    company: "Global Investments",
+    avatar: "https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?w=150&h=150&fit=crop&crop=faces",
+    content: "The accuracy of the loan prediction algorithm is impressive. I recommend this tool to all my clients looking for financing options.",
+    rating: 5,
+  },
+  {
+    id: "509a746d-3865-4349-8b51-ba65c58a2958",
+    name: "James Wilson",
+    role: "Entrepreneur",
+    company: "Tech Innovations",
+    avatar: "https://images.unsplash.com/photo-1581092795360-fd1ca04f0952?w=150&h=150&fit=crop&crop=faces",
+    content: "The personalized bank matching feature connected me with a lender that perfectly understood my startup's unique financial needs.",
+    rating: 4,
+  },
+  {
+    id: "2e6dc022-d612-4429-8a52-012bde8e3692",
+    name: "Olivia Martinez",
+    role: "Real Estate Agent",
+    company: "Premier Properties",
+    avatar: "https://images.unsplash.com/photo-1649972904349-6e44c42644a7?w=150&h=150&fit=crop&crop=faces",
+    content: "I now refer all my clients to this platform. The financial insights have helped numerous families secure their dream homes.",
+    rating: 5,
+  },
+  {
+    id: "cd1976f6-53ba-4639-a775-151bb8b7fdd3",
+    name: "Sarah Johnson",
+    role: "Small Business Owner",
+    company: "Bright Ideas Co.",
+    avatar: "https://images.unsplash.com/photo-1649972904349-6e44c42644a7?w=150&h=150&fit=crop&crop=faces",
+    content: "This platform helped me secure a business loan with favorable terms. The loan prediction tool was spot-on with its assessment!",
+    rating: 5,
+  },
+];
+
 const Testimonials = () => {
   const carouselRef = useRef<HTMLDivElement>(null);
   const [testimonials, setTestimonials] = useState<Testimonial[]>([]);
@@ -38,6 +86,7 @@ const Testimonials = () => {
         setTestimonials(data || []);
       } catch (error) {
         console.error('Error fetching testimonials:', error);
+        setTestimonials(FALLBACK_TESTIMONIALS);
       } finally {
         setLoading(false);
       }
