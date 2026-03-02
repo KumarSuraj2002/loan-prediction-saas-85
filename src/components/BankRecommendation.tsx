@@ -34,6 +34,20 @@ import { z } from "zod";
 import { Search, CreditCard, ChevronRight, ChevronDown } from "lucide-react";
 import { UserPreferences } from "@/data/loanDataTypes";
 import { supabase } from "@/integrations/supabase/client";
+import { bankOptions, additionalBanks } from "@/data/bankOptions";
+
+// Convert local bank data to match Supabase format for fallback
+const FALLBACK_BANKS = [...bankOptions, ...additionalBanks].map(bank => ({
+  id: bank.id,
+  name: bank.name,
+  logo_text: bank.logoText,
+  rating: bank.rating,
+  features: bank.features,
+  account_types: bank.accountTypes,
+  interest_rates: bank.interestRates,
+  locations: bank.locations,
+  description: bank.description,
+}));
 
 const formSchema = z.object({
   bankingNeed: z.string().min(1, "Please select your primary banking need"),
@@ -108,9 +122,10 @@ const BankRecommendation = () => {
           .order('rating', { ascending: false });
 
         if (error) throw error;
-        setAllBanks(data || []);
+        setAllBanks(data && data.length > 0 ? data : FALLBACK_BANKS);
       } catch (error) {
         console.error('Error fetching banks:', error);
+        setAllBanks(FALLBACK_BANKS);
       } finally {
         setLoading(false);
       }
