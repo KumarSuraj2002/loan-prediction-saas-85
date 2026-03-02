@@ -58,9 +58,17 @@ export const useSiteSettings = () => {
   const fetchSettings = async () => {
     try {
       console.log('Fetching settings...');
-      const { data, error } = await supabase
+      
+      // Add timeout to prevent infinite loading when Supabase is unreachable
+      const timeoutPromise = new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('Settings fetch timeout')), 5000)
+      );
+      
+      const fetchPromise = supabase
         .from('site_settings')
         .select('*');
+
+      const { data, error } = await Promise.race([fetchPromise, timeoutPromise]) as any;
 
       if (error) throw error;
       console.log('Settings data from DB:', data);
