@@ -18,11 +18,17 @@ const BankDetailsPage = () => {
   useEffect(() => {
     const fetchBank = async () => {
       try {
-        const { data, error } = await supabase
+        const timeoutPromise = new Promise((_, reject) => 
+          setTimeout(() => reject(new Error('Bank fetch timeout')), 3000)
+        );
+        
+        const fetchPromise = supabase
           .from('banks')
           .select('*')
           .eq('id', bankId)
           .single();
+
+        const { data, error } = await Promise.race([fetchPromise, timeoutPromise]) as any;
 
         if (error) throw error;
         
