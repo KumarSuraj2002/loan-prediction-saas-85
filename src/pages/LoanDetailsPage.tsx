@@ -9,6 +9,9 @@ import { Check, AlertCircle, ArrowLeft, ArrowRight } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { bankOptions, additionalBanks } from "@/data/bankOptions";
+
+const ALL_LOCAL_BANKS = [...bankOptions, ...additionalBanks];
 
 const LoanDetailsPage = () => {
   const { bankId, loanType } = useParams();
@@ -20,16 +23,21 @@ const LoanDetailsPage = () => {
   useEffect(() => {
     const fetchBank = async () => {
       try {
-        const { data, error } = await supabase
+        const timeoutPromise = new Promise((_, reject) => 
+          setTimeout(() => reject(new Error('Bank fetch timeout')), 3000)
+        );
+        
+        const fetchPromise = supabase
           .from('banks')
           .select('*')
           .eq('id', bankId)
           .single();
 
+        const { data, error } = await Promise.race([fetchPromise, timeoutPromise]) as any;
+
         if (error) throw error;
         
         if (data) {
-          // Transform Supabase data to match expected format
           const transformedBank = {
             id: data.id,
             name: data.name,
@@ -42,14 +50,20 @@ const LoanDetailsPage = () => {
             description: data.description
           };
           setBank(transformedBank);
-          
-          // Generate loan details based on loan type and bank data
           const details = generateLoanDetails(loanType as string, transformedBank);
           setLoanDetails(details);
         }
       } catch (error) {
         console.error('Error fetching bank:', error);
-        navigate('/');
+        // Fallback to local data
+        const localBank = ALL_LOCAL_BANKS.find(b => b.id === bankId);
+        if (localBank) {
+          setBank(localBank);
+          const details = generateLoanDetails(loanType as string, localBank);
+          setLoanDetails(details);
+        } else {
+          navigate('/');
+        }
       }
     };
 
