@@ -26,11 +26,17 @@ const LoanTypeSelector = () => {
   
   const fetchActiveLoanProducts = async () => {
     try {
-      const { data, error } = await supabase
+      const timeoutPromise = new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('Loan products fetch timeout')), 3000)
+      );
+      
+      const fetchPromise = supabase
         .from('loan_products')
         .select('name')
         .eq('is_active', true)
         .order('name');
+      
+      const { data, error } = await Promise.race([fetchPromise, timeoutPromise]) as any;
       
       if (error) throw error;
       
