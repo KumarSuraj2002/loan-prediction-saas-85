@@ -6,6 +6,9 @@ import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableRow } from "@/components/ui/table";
 import { ArrowLeft, CreditCard, Home, Car, GraduationCap } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { bankOptions, additionalBanks } from "@/data/bankOptions";
+
+const ALL_LOCAL_BANKS = [...bankOptions, ...additionalBanks];
 
 const BankDetailsPage = () => {
   const { bankId } = useParams();
@@ -24,7 +27,6 @@ const BankDetailsPage = () => {
         if (error) throw error;
         
         if (data) {
-          // Transform Supabase data to match expected format
           const transformedBank = {
             id: data.id,
             name: data.name,
@@ -40,7 +42,13 @@ const BankDetailsPage = () => {
         }
       } catch (error) {
         console.error('Error fetching bank:', error);
-        navigate('/');
+        // Fallback to local data
+        const localBank = ALL_LOCAL_BANKS.find(b => b.id === bankId);
+        if (localBank) {
+          setBank(localBank);
+        } else {
+          navigate('/');
+        }
       }
     };
 

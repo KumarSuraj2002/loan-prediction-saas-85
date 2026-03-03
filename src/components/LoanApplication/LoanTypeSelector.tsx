@@ -7,6 +7,14 @@ import { ArrowLeft, ArrowRight } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
+const FALLBACK_LOAN_TYPES = [
+  { id: 'personal', name: 'Personal Loan' },
+  { id: 'home', name: 'Home Loan' },
+  { id: 'car', name: 'Car Loan' },
+  { id: 'education', name: 'Education Loan' },
+  { id: 'business', name: 'Business Loan' },
+];
+
 const LoanTypeSelector = () => {
   const navigate = useNavigate();
   const [loanTypes, setLoanTypes] = useState<Array<{ id: string; name: string }>>([]);
@@ -40,12 +48,12 @@ const LoanTypeSelector = () => {
           id: nameToIdMap[product.name] || product.name.toLowerCase().replace(' ', '-'),
           name: product.name
         }))
-        .filter(loan => loan.id); // Only include loans with valid IDs
+        .filter(loan => loan.id);
       
-      setLoanTypes(mappedLoanTypes);
+      setLoanTypes(mappedLoanTypes.length > 0 ? mappedLoanTypes : FALLBACK_LOAN_TYPES);
     } catch (error) {
       console.error('Error fetching loan products:', error);
-      toast.error('Failed to load loan types');
+      setLoanTypes(FALLBACK_LOAN_TYPES);
     } finally {
       setLoading(false);
     }
