@@ -19,6 +19,7 @@ import {
 import { Mail } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useSiteSettings } from "@/hooks/useSiteSettings";
+import { supabase } from "@/integrations/supabase/client";
 
 const Contact = () => {
   const [formData, setFormData] = useState({
@@ -41,13 +42,23 @@ const Contact = () => {
     setFormData(prev => ({ ...prev, subject: value }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     
-    // Simulate form submission
-    setTimeout(() => {
-      setLoading(false);
+    try {
+      const { error } = await supabase
+        .from('user_queries')
+        .insert({
+          name: formData.name,
+          email: formData.email,
+          subject: formData.subject || 'General Question',
+          message: formData.message,
+          query_type: formData.subject || 'general',
+        });
+
+      if (error) throw error;
+
       toast({
         title: "Message Sent",
         description: "We'll get back to you as soon as possible.",
@@ -58,7 +69,16 @@ const Contact = () => {
         subject: '',
         message: ''
       });
-    }, 1500);
+    } catch (error) {
+      console.error('Error submitting contact form:', error);
+      toast({
+        title: "Failed to send",
+        description: "Please try again later.",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
