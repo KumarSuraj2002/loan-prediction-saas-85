@@ -1,0 +1,2 @@
+ALTER TABLE public.loan_applications DROP CONSTRAINT loan_applications_application_status_check;
+ALTER TABLE public.loan_applications ADD CONSTRAINT loan_applications_application_status_check CHECK (application_status = ANY (ARRAY['pending'::text, 'approved'::text, 'rejected'::text, 'under_review'::text, 'pending_documents'::text]));
