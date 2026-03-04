@@ -48,8 +48,8 @@ const BankDetailsPage = () => {
         }
       } catch (error) {
         console.error('Error fetching bank:', error);
-        // Fallback to local data
-        const localBank = ALL_LOCAL_BANKS.find(b => b.id === bankId);
+        // Fallback to local data - match by id or logoText
+        const localBank = ALL_LOCAL_BANKS.find(b => b.id === bankId || b.logoText === bankId);
         if (localBank) {
           setBank(localBank);
         } else {
