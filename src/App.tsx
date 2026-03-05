@@ -16,6 +16,7 @@ import BlogPost from "./pages/BlogPost";
 import FinancialGuides from "./pages/FinancialGuides";
 import GuidePost from "./pages/GuidePost";
 import EMICalculator from "./pages/EMICalculator";
+import CreditScoreCalculator from "./pages/CreditScoreCalculator";
 import APIDocumentation from "./pages/APIDocumentation";
 import BankDetailsPage from "./pages/BankDetailsPage";
 import LoanDetailsPage from "./pages/LoanDetailsPage";
@@ -86,6 +87,7 @@ const App = () => (
                 <Route path="/guides" element={<FinancialGuides />} />
                 <Route path="/guides/:guideId" element={<GuidePost />} />
                 <Route path="/calculator" element={<EMICalculator />} />
+                <Route path="/credit-score" element={<CreditScoreCalculator />} />
                 <Route path="/api-docs" element={<APIDocumentation />} />
                 <Route path="/bank/:bankId" element={<BankDetailsPage />} />
                 <Route path="/bank/:bankId/loan/:loanType" element={<LoanDetailsPage />} />

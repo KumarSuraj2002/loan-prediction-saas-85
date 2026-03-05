@@ -71,7 +71,7 @@ const Footer = () => {
                 <ul className="space-y-2 text-sm">
                   <li><a href="/#loan-prediction" className="text-muted-foreground hover:text-foreground">Loan Prediction</a></li>
                   <li><a href="/#bank-recommendation" className="text-muted-foreground hover:text-foreground">Bank Finder</a></li>
-                  <li><Link to="/calculator" className="text-muted-foreground hover:text-foreground">EMI Calculator</Link></li>
+                  <li><Link to="/credit-score" className="text-muted-foreground hover:text-foreground">Credit Score Calculator</Link></li>
                   <li><a href="/#features" className="text-muted-foreground hover:text-foreground">Financial Planning</a></li>
                 </ul>
               </div>
