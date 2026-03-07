@@ -60,6 +60,9 @@ const AdminLoanApplications = ({ status }: AdminLoanApplicationsProps) => {
   const [statusUpdateReason, setStatusUpdateReason] = useState('');
   const [applicationDocs, setApplicationDocs] = useState<ApplicationDocument[]>([]);
   const [docsLoading, setDocsLoading] = useState(false);
+  const [isViewAllDocsOpen, setIsViewAllDocsOpen] = useState(false);
+  const [allDocsUrls, setAllDocsUrls] = useState<{ doc: ApplicationDocument; url: string }[]>([]);
+  const [allDocsLoading, setAllDocsLoading] = useState(false);
 
   const fetchApplications = async () => {
     try {
