@@ -360,9 +360,16 @@ const AdminLoanApplications = ({ status }: AdminLoanApplicationsProps) => {
 
               {/* Uploaded Documents */}
               <div>
-                <h3 className="font-semibold text-base mb-3 flex items-center gap-2">
-                  <FileText className="h-4 w-4" /> Uploaded Documents
-                </h3>
+                <div className="flex items-center justify-between mb-3">
+                  <h3 className="font-semibold text-base flex items-center gap-2">
+                    <FileText className="h-4 w-4" /> Uploaded Documents
+                  </h3>
+                  {applicationDocs.length > 0 && (
+                    <Button variant="outline" size="sm" onClick={handleViewAllDocuments}>
+                      <Files className="h-4 w-4 mr-1" /> View All Documents
+                    </Button>
+                  )}
+                </div>
                 {docsLoading ? (
                   <p className="text-sm text-muted-foreground">Loading documents...</p>
                 ) : applicationDocs.length === 0 ? (
