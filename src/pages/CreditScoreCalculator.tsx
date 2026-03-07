@@ -78,7 +78,7 @@ const CreditScoreCalculator = () => {
       paymentExplanation = `${late} late payments detected — this moderately hurts your score.`;
       paymentSuggestion = "Prioritize clearing overdue payments immediately and set up autopay for all accounts.";
     } else {
-      paymentScore = 25;
+      paymentScore = 30;
       paymentExplanation = `${late} late payments — this significantly impacts your creditworthiness.`;
       paymentSuggestion = "Seek a financial advisor. Focus on paying minimum dues on time before tackling larger debts.";
     }
