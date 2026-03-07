@@ -457,6 +457,68 @@ const AdminLoanApplications = ({ status }: AdminLoanApplicationsProps) => {
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* View All Documents Dialog */}
+      <Dialog open={isViewAllDocsOpen} onOpenChange={setIsViewAllDocsOpen}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Files className="h-5 w-5" /> All Uploaded Documents
+            </DialogTitle>
+            <DialogDescription>
+              {selectedApplication?.applicant_name} — {selectedApplication?.loan_type} Application
+            </DialogDescription>
+          </DialogHeader>
+          {allDocsLoading ? (
+            <div className="flex items-center justify-center py-12">
+              <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+              <span className="ml-3 text-muted-foreground">Loading all documents...</span>
+            </div>
+          ) : allDocsUrls.length === 0 ? (
+            <p className="text-center text-muted-foreground py-8">No documents could be loaded.</p>
+          ) : (
+            <div className="space-y-6">
+              {allDocsUrls.map(({ doc, url }, index) => {
+                const label = DOCUMENT_TYPE_LABELS[doc.document_type] || doc.document_type;
+                const isImage = /\.(jpg|jpeg|png|gif|webp|bmp)$/i.test(doc.document_name);
+                const isPdf = /\.pdf$/i.test(doc.document_name);
+
+                return (
+                  <div key={doc.id} className="border rounded-lg overflow-hidden">
+                    <div className="bg-muted px-4 py-3 flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <Badge variant="secondary" className="text-xs">{index + 1}</Badge>
+                        <span className="font-semibold text-sm">{label}</span>
+                        <span className="text-xs text-muted-foreground">({doc.document_name})</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Button variant="ghost" size="sm" onClick={() => window.open(url, '_blank')}>
+                          <ExternalLink className="h-3 w-3 mr-1" /> Open
+                        </Button>
+                      </div>
+                    </div>
+                    <div className="p-4 flex justify-center bg-background">
+                      {isImage ? (
+                        <img src={url} alt={label} className="max-w-full max-h-[500px] object-contain rounded" />
+                      ) : isPdf ? (
+                        <iframe src={url} className="w-full h-[500px] rounded border" title={label} />
+                      ) : (
+                        <div className="text-center py-8">
+                          <FileText className="h-12 w-12 text-muted-foreground mx-auto mb-2" />
+                          <p className="text-sm text-muted-foreground">Preview not available for this file type.</p>
+                          <Button variant="outline" size="sm" className="mt-2" onClick={() => window.open(url, '_blank')}>
+                            <ExternalLink className="h-4 w-4 mr-1" /> Open in New Tab
+                          </Button>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
