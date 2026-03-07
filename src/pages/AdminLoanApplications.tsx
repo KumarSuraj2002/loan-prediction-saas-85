@@ -148,6 +148,29 @@ const AdminLoanApplications = ({ status }: AdminLoanApplicationsProps) => {
     URL.revokeObjectURL(url);
   };
 
+  const handleViewAllDocuments = async () => {
+    if (applicationDocs.length === 0) {
+      toast.error('No documents to display');
+      return;
+    }
+    setIsViewAllDocsOpen(true);
+    setAllDocsLoading(true);
+    try {
+      const results = await Promise.all(
+        applicationDocs.map(async (doc) => {
+          const url = await getDocumentUrl(doc.storage_path);
+          return { doc, url: url || '' };
+        })
+      );
+      setAllDocsUrls(results.filter((r) => r.url));
+    } catch (error) {
+      console.error('Error loading all documents:', error);
+      toast.error('Failed to load documents');
+    } finally {
+      setAllDocsLoading(false);
+    }
+  };
+
   const updateApplicationStatus = async (id: string, newStatus: string, reason?: string) => {
     try {
       const application = applications.find(app => app.id === id);
