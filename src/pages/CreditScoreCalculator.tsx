@@ -556,6 +556,10 @@ const CreditScoreCalculator = () => {
               )}
             </div>
           </div>
+          <div className="mt-8 text-center text-xs text-muted-foreground bg-muted/50 rounded-lg px-6 py-4 max-w-2xl mx-auto">
+            <Info className="w-4 h-4 inline-block mr-1 -mt-0.5" />
+            <strong>Disclaimer:</strong> This credit score is an estimate. Official credit scores are provided by credit bureaus such as CIBIL, Experian, or Equifax.
+          </div>
         </div>
       </main>
       <Footer />
