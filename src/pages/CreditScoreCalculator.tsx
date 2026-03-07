@@ -447,6 +447,16 @@ const CreditScoreCalculator = () => {
                       <p className="text-sm font-medium text-muted-foreground">
                         Risk Level: <span className="text-foreground">{result.riskLevel}</span>
                       </p>
+                      {(() => {
+                        const limit = parseFloat(creditLimit) || 0;
+                        const balance = parseFloat(creditBalance) || 0;
+                        const util = limit > 0 ? ((balance / limit) * 100).toFixed(1) : null;
+                        return util ? (
+                          <p className="text-sm font-medium text-muted-foreground">
+                            Credit Utilization: <span className="text-foreground">{util}%</span>
+                          </p>
+                        ) : null;
+                      })()}
                       <div className="space-y-2">
                         <div className="flex justify-between text-xs text-muted-foreground">
                           <span>300</span>
