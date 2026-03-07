@@ -4,12 +4,12 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Eye, Edit, Trash2, FileText, Download, ExternalLink } from 'lucide-react';
+import { Eye, Edit, Trash2, FileText, Download, ExternalLink, Files, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 
 interface LoanApplication {
@@ -60,6 +60,9 @@ const AdminLoanApplications = ({ status }: AdminLoanApplicationsProps) => {
   const [statusUpdateReason, setStatusUpdateReason] = useState('');
   const [applicationDocs, setApplicationDocs] = useState<ApplicationDocument[]>([]);
   const [docsLoading, setDocsLoading] = useState(false);
+  const [isViewAllDocsOpen, setIsViewAllDocsOpen] = useState(false);
+  const [allDocsUrls, setAllDocsUrls] = useState<{ doc: ApplicationDocument; url: string }[]>([]);
+  const [allDocsLoading, setAllDocsLoading] = useState(false);
 
   const fetchApplications = async () => {
     try {
@@ -143,6 +146,29 @@ const AdminLoanApplications = ({ status }: AdminLoanApplicationsProps) => {
     a.click();
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
+  };
+
+  const handleViewAllDocuments = async () => {
+    if (applicationDocs.length === 0) {
+      toast.error('No documents to display');
+      return;
+    }
+    setIsViewAllDocsOpen(true);
+    setAllDocsLoading(true);
+    try {
+      const results = await Promise.all(
+        applicationDocs.map(async (doc) => {
+          const url = await getDocumentUrl(doc.storage_path);
+          return { doc, url: url || '' };
+        })
+      );
+      setAllDocsUrls(results.filter((r) => r.url));
+    } catch (error) {
+      console.error('Error loading all documents:', error);
+      toast.error('Failed to load documents');
+    } finally {
+      setAllDocsLoading(false);
+    }
   };
 
   const updateApplicationStatus = async (id: string, newStatus: string, reason?: string) => {
@@ -334,9 +360,16 @@ const AdminLoanApplications = ({ status }: AdminLoanApplicationsProps) => {
 
               {/* Uploaded Documents */}
               <div>
-                <h3 className="font-semibold text-base mb-3 flex items-center gap-2">
-                  <FileText className="h-4 w-4" /> Uploaded Documents
-                </h3>
+                <div className="flex items-center justify-between mb-3">
+                  <h3 className="font-semibold text-base flex items-center gap-2">
+                    <FileText className="h-4 w-4" /> Uploaded Documents
+                  </h3>
+                  {applicationDocs.length > 0 && (
+                    <Button variant="outline" size="sm" onClick={handleViewAllDocuments}>
+                      <Files className="h-4 w-4 mr-1" /> View All Documents
+                    </Button>
+                  )}
+                </div>
                 {docsLoading ? (
                   <p className="text-sm text-muted-foreground">Loading documents...</p>
                 ) : applicationDocs.length === 0 ? (
@@ -422,6 +455,68 @@ const AdminLoanApplications = ({ status }: AdminLoanApplicationsProps) => {
               <Button variant="outline" onClick={() => setIsEditDialogOpen(false)} className="w-full sm:w-auto">Cancel</Button>
             </div>
           </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* View All Documents Dialog */}
+      <Dialog open={isViewAllDocsOpen} onOpenChange={setIsViewAllDocsOpen}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Files className="h-5 w-5" /> All Uploaded Documents
+            </DialogTitle>
+            <DialogDescription>
+              {selectedApplication?.applicant_name} — {selectedApplication?.loan_type} Application
+            </DialogDescription>
+          </DialogHeader>
+          {allDocsLoading ? (
+            <div className="flex items-center justify-center py-12">
+              <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+              <span className="ml-3 text-muted-foreground">Loading all documents...</span>
+            </div>
+          ) : allDocsUrls.length === 0 ? (
+            <p className="text-center text-muted-foreground py-8">No documents could be loaded.</p>
+          ) : (
+            <div className="space-y-6">
+              {allDocsUrls.map(({ doc, url }, index) => {
+                const label = DOCUMENT_TYPE_LABELS[doc.document_type] || doc.document_type;
+                const isImage = /\.(jpg|jpeg|png|gif|webp|bmp)$/i.test(doc.document_name);
+                const isPdf = /\.pdf$/i.test(doc.document_name);
+
+                return (
+                  <div key={doc.id} className="border rounded-lg overflow-hidden">
+                    <div className="bg-muted px-4 py-3 flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <Badge variant="secondary" className="text-xs">{index + 1}</Badge>
+                        <span className="font-semibold text-sm">{label}</span>
+                        <span className="text-xs text-muted-foreground">({doc.document_name})</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Button variant="ghost" size="sm" onClick={() => window.open(url, '_blank')}>
+                          <ExternalLink className="h-3 w-3 mr-1" /> Open
+                        </Button>
+                      </div>
+                    </div>
+                    <div className="p-4 flex justify-center bg-background">
+                      {isImage ? (
+                        <img src={url} alt={label} className="max-w-full max-h-[500px] object-contain rounded" />
+                      ) : isPdf ? (
+                        <iframe src={url} className="w-full h-[500px] rounded border" title={label} />
+                      ) : (
+                        <div className="text-center py-8">
+                          <FileText className="h-12 w-12 text-muted-foreground mx-auto mb-2" />
+                          <p className="text-sm text-muted-foreground">Preview not available for this file type.</p>
+                          <Button variant="outline" size="sm" className="mt-2" onClick={() => window.open(url, '_blank')}>
+                            <ExternalLink className="h-4 w-4 mr-1" /> Open in New Tab
+                          </Button>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
         </DialogContent>
       </Dialog>
     </div>
