@@ -78,7 +78,7 @@ const CreditScoreCalculator = () => {
       paymentExplanation = `${late} late payments detected — this moderately hurts your score.`;
       paymentSuggestion = "Prioritize clearing overdue payments immediately and set up autopay for all accounts.";
     } else {
-      paymentScore = 25;
+      paymentScore = 30;
       paymentExplanation = `${late} late payments — this significantly impacts your creditworthiness.`;
       paymentSuggestion = "Seek a financial advisor. Focus on paying minimum dues on time before tackling larger debts.";
     }
@@ -447,6 +447,16 @@ const CreditScoreCalculator = () => {
                       <p className="text-sm font-medium text-muted-foreground">
                         Risk Level: <span className="text-foreground">{result.riskLevel}</span>
                       </p>
+                      {(() => {
+                        const limit = parseFloat(creditLimit) || 0;
+                        const balance = parseFloat(creditBalance) || 0;
+                        const util = limit > 0 ? ((balance / limit) * 100).toFixed(1) : null;
+                        return util ? (
+                          <p className="text-sm font-medium text-muted-foreground">
+                            Credit Utilization: <span className="text-foreground">{util}%</span>
+                          </p>
+                        ) : null;
+                      })()}
                       <div className="space-y-2">
                         <div className="flex justify-between text-xs text-muted-foreground">
                           <span>300</span>
@@ -545,6 +555,10 @@ const CreditScoreCalculator = () => {
                 </Card>
               )}
             </div>
+          </div>
+          <div className="mt-8 text-center text-xs text-muted-foreground bg-muted/50 rounded-lg px-6 py-4 max-w-2xl mx-auto">
+            <Info className="w-4 h-4 inline-block mr-1 -mt-0.5" />
+            <strong>Disclaimer:</strong> This credit score is an estimate. Official credit scores are provided by credit bureaus such as CIBIL, Experian, or Equifax.
           </div>
         </div>
       </main>
