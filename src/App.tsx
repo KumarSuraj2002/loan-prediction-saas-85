@@ -2,7 +2,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 import Index from "./pages/Index";
 import Profile from "./pages/Profile";
 import NotFound from "./pages/NotFound";
@@ -41,6 +41,12 @@ import MaintenanceWrapper from "./components/MaintenanceWrapper";
 import LoanAdvisorChat from "./components/LoanAdvisorChat";
 
 const queryClient = new QueryClient();
+
+const PublicChatbot = () => {
+  const location = useLocation();
+  if (location.pathname.startsWith('/admin')) return null;
+  return <LoanAdvisorChat />;
+};
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
@@ -99,8 +105,8 @@ const App = () => (
             </MaintenanceWrapper>
           } />
         </Routes>
-        {/* Global floating chatbot */}
-        <LoanAdvisorChat />
+        {/* Floating chatbot - only on public pages */}
+        <PublicChatbot />
       </BrowserRouter>
     </TooltipProvider>
   </QueryClientProvider>
