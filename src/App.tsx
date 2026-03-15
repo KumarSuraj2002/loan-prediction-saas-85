@@ -99,8 +99,8 @@ const App = () => (
             </MaintenanceWrapper>
           } />
         </Routes>
-        {/* Global floating chatbot */}
-        <LoanAdvisorChat />
+        {/* Floating chatbot - only on public pages */}
+        <PublicChatbot />
       </BrowserRouter>
     </TooltipProvider>
   </QueryClientProvider>
