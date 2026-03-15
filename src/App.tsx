@@ -42,6 +42,12 @@ import LoanAdvisorChat from "./components/LoanAdvisorChat";
 
 const queryClient = new QueryClient();
 
+const PublicChatbot = () => {
+  const location = useLocation();
+  if (location.pathname.startsWith('/admin')) return null;
+  return <LoanAdvisorChat />;
+};
+
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
